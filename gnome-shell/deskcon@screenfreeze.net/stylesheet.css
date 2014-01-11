@@ -1,0 +1,28 @@
+
+.phonesMenu {
+	width: 20px;
+    font-size: 36px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: rgba(10,10,10,0.7);
+    border-radius: 5px;
+    padding: .5em;
+}
+
+.device-label {
+    font-weight: bold;
+    font-size: 16px;
+
+    min-width: 220px;
+}
+
+.notifications-label {
+    font-weight: bold;
+    padding-top: .2em;
+}
+
+.notifications-box {
+    padding-bottom: .8em;
+    spacing: 0.2em;
+    max-width: 220px;
+}
