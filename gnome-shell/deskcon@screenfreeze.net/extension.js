@@ -171,8 +171,14 @@ const PhonesMenuItem = new Lang.Class({
         if (can_message) {
             this.vbox.add(this.compbutton, { x_fill: true, expand: true });
         }
-        this.addActor(this.vbox, { expand: true });
         
+        // GS 3.8 support
+        if (shellversion[1] == 10) {
+            this.actor.add_child(this.vbox, { expand: true });
+        }
+        else {
+            this.addActor(this.vbox, { expand: true });
+        }        
     },
 
     destroy: function() {
@@ -224,8 +230,33 @@ const PhonesMenuItem = new Lang.Class({
 
 });
 
-
 const PhonesMenu = new Lang.Class({
+    Name: 'PhonesMenu.PhoneMenu',
+    Extends: PanelMenu.Button,
+
+    _init: function() {
+        this.parent(0.0, 'PhoneMenu');
+        let hbox = new St.BoxLayout({ style_class: 'panel-status-menu-box' });
+        let icon = new St.Icon({ icon_name: 'sphone-symbolic',
+                                 style_class: 'system-status-icon' });
+
+        hbox.add_child(icon);
+        this.actor.add_child(hbox);
+    },
+
+    show: function() {
+        this.actor.show();
+        updatehandler();        
+    },
+
+    destroy: function() {
+        this.parent();
+    },
+
+});
+
+// GS 3.8
+const PhonesMenuOld = new Lang.Class({
     Name: 'PhonesMenu.PhoneMenu',
     Extends: PanelMenu.SystemStatusButton,
 
@@ -253,20 +284,27 @@ function init(extensionMeta) {
 let _indicator;
 let regPhones = {};
 let dbusclient;
+let shellversion;
 
 function enable() {
     dbusclient = new DBusClient();
-    _indicator = new PhonesMenu;    
+    shellversion = imports.misc.config.PACKAGE_VERSION.split(".").map(function (x) { return +x; })
+    
+    // GS 3.8 support
+    if (shellversion[1] == 10) {
+        _indicator = new PhonesMenu; 
+    }
+    else {
+        _indicator = new PhonesMenuOld;
+    }  
 
     Main.panel.addToStatusArea('phonesMenu', _indicator, 1);
     
     updatehandler();
-    log("enabled");
 }
 
 function disable() {
     dbusclient.destroy();    
     _indicator.destroy();
     regPhones = {};
-    log("disabled");
 }
