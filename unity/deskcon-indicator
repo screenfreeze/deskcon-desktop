@@ -1,0 +1,116 @@
+#!/usr/bin/python
+# not ready
+
+import dbus
+import json
+from gi.repository import GObject, Gtk
+from gi.repository import AppIndicator3 as appindicator
+from dbus import glib
+from dbus.mainloop.glib import DBusGMainLoop
+glib.init_threads()
+
+class IndicatorDeskCon:
+    def __init__(self):
+        self.ind = appindicator.Indicator.new(
+                            "indicator-deskcon", 
+                            "phone",
+                            appindicator.IndicatorCategory.APPLICATION_STATUS)
+
+        self.ind.set_status (appindicator.IndicatorStatus.ACTIVE)
+
+        self.menu = Gtk.Menu()
+        #item = Gtk.MenuItem("Exit")
+        #item.connect("activate", self.handler_menu_exit)
+        #item.show()
+        #self.menu.append(item)
+
+        self.menu.show()
+        self.ind.set_menu(self.menu)
+        self.dbusclient = DbusClient(self)
+        self.devicelist = {}
+    
+    def update(self):
+        jsonstr = self.dbusclient.getStats()
+        data = json.loads(jsonstr)
+        devices = data['phones']
+
+        for device in devices:
+            uuid = device['uuid']
+            if (self.devicelist.has_key(uuid)):
+                self.devicelist[uuid].update(device)
+            else:
+                newdevice = DeviceMenuBundle(self, device)
+                self.devicelist[uuid] = newdevice            
+    
+    def handler_menu_exit(self, evt):
+        Gtk.main_quit()
+
+    def compose(self, evt):
+        self.dbusclient.compose()
+
+    def main(self):
+        self.dbusclient.run()
+        self.update()
+        Gtk.main()
+
+class DeviceMenuBundle():
+    def __init__(self, indicator, data):
+        self.indicator = indicator
+        self.statsitem = Gtk.MenuItem()
+        self.statsitem.show()
+        self.indicator.menu.append(self.statsitem)
+        if (data['canmessage']):
+            self.composeitem = Gtk.MenuItem("     Compose Message ...")
+            self.composeitem.connect("activate", self.indicator.compose)
+            self.composeitem.show()
+            self.indicator.menu.append(self.composeitem)
+
+        separator = Gtk.SeparatorMenuItem()
+        separator.show()
+        self.indicator.menu.append(separator)
+        self.update(data)
+
+    def update(self, data):
+        name = data['name']
+        volume = str(data['volume'])
+        battery = str(data['battery'])
+        storage = str(data['storage'])        
+        text = (name+
+                "\n     Volume: "+volume+"%   Battery: "+battery+"%"+
+                "\n     Storage: "+storage+"%")
+        self.statsitem.set_label(text)
+
+
+class DbusClient():
+    def __init__(self, indicator):
+        self.indicator = indicator
+        bus = dbus.SessionBus()
+        proxy = bus.get_object("net.screenfreeze.desktopconnector",
+                                       "/net/screenfreeze/desktopconnector"
+                                      )
+
+        self.iface = dbus.Interface(proxy, 'net.screenfreeze.desktopconnector')
+        
+        self.iface.connect_to_signal('changed', self.indicator.update)
+        #self.iface.connect_to_signal('new_notification', on_new_notification)
+
+    def run(self):
+        DBusGMainLoop(set_as_default=True)        
+        GObject.threads_init()
+        dbus.mainloop.glib.threads_init()
+
+    def getStats(self):
+        return self.iface.stats()
+
+    def getNotifications(self):
+        print self.iface.notification()
+
+    def compose(self):
+        print self.iface.compose_sms("192.168.0.29")
+
+
+if __name__ == "__main__":
+    ind = IndicatorDeskCon()
+    ind.main()
+
+
