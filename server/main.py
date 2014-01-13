@@ -112,10 +112,10 @@ class Connector():
             else:
                 notificationmanager.buildNotification("URL", "Link: "+message)
 
-        elif (msgtype == "CLPBRD"): #not ready
-            #pyperclip.setcb(message)
+        elif (msgtype == "CLPBRD"):
+            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+            clipboard.set_text(message, -1)
             notificationmanager.buildTransientNotification("Clipboard", message)   
-            print "copy to clipboard"
 
         elif (msgtype == "MIS_CALL"):
             notificationmanager.buildNotification(name, "missed Call from "+message)
