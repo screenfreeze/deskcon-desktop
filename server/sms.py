@@ -12,7 +12,9 @@ class EntryWindow(Gtk.Window):
 
     def __init__(self, ip, port, number):
         Gtk.Window.__init__(self, title="Compose")
+        self.set_wmclass ("DeskCon", "Compose")
         self.set_size_request(420, 300)
+        self.set_icon_name("phone")
 
         self.ip = ip
         self.port = port
