@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# not ready
 
 import dbus
 import json
@@ -56,6 +55,12 @@ class IndicatorDeskCon:
 class DeviceMenuBundle():
     def __init__(self, indicator, data):
         self.indicator = indicator
+        # is first check
+        if (len(self.indicator.menu.get_children()) > 0 ):
+            separator = Gtk.SeparatorMenuItem()
+            separator.show()
+            self.indicator.menu.append(separator)
+
         self.statsitem = Gtk.MenuItem()
         self.statsitem.show()
         self.indicator.menu.append(self.statsitem)
@@ -65,19 +70,26 @@ class DeviceMenuBundle():
             self.composeitem.show()
             self.indicator.menu.append(self.composeitem)
 
-        separator = Gtk.SeparatorMenuItem()
-        separator.show()
-        self.indicator.menu.append(separator)
         self.update(data)
 
     def update(self, data):
         name = data['name']
         volume = str(data['volume'])
         battery = str(data['battery'])
-        storage = str(data['storage'])        
+        storage = str(data['storage'])
+        missedsmstxt = ""
+        missedcalltxt = ""
+        if (data['missedsmscount'] > 0): 
+            missedsmstxt = "\nunread Messages "+ str(data['missedsmscount'])     
+        if (data['missedcallcount'] > 0): 
+            missedcalltxt = "\nmissed Calls "+ str(data['missedcallcount'])
+        missedtxt = missedsmstxt+missedcalltxt
+        
         text = (name+
                 "\n     Volume: "+volume+"%   Battery: "+battery+"%"+
-                "\n     Storage: "+storage+"%")
+                "\n     Storage: "+storage+"%"+
+                missedtxt)
+
         self.statsitem.set_label(text)
 
 
@@ -112,5 +124,3 @@ class DbusClient():
 if __name__ == "__main__":
     ind = IndicatorDeskCon()
     ind.main()
-
-
