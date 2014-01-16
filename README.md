@@ -51,6 +51,7 @@ Todo:
 	- Media Control
 	- send Files to Android
 	- Fingerprint validation via QR Code
+	- Browser Extensions
 
 
 Bugs:

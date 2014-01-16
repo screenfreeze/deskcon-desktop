@@ -57,6 +57,7 @@ else:
 
 
 port = config.get('network', 'port')
+secure_port = config.get('network', 'secure_port')
 bindip = config.get('network', 'bindip')
 uuid = config.getint('general', 'uuid')
 downloaddir = os.path.join(config.get('general', 'download_dir'))
