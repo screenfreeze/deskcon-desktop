@@ -190,15 +190,19 @@ class Connector():
                                      socket.SOCK_STREAM))                
                 #negotiate new secure connection port
                 newport = 8026
+                
                 sslserversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)     
                 sslserversocket.bind(('', newport)) 
                 sslserversocket.listen(1)
-                csocket.sendall(str(newport))            
+                csocket.sendall(str(newport))
+
                 sslcsocket, ssladdress = sslserversocket.accept()
                 sslserversocket.close()
+                
                 # receive data
                 data = sslcsocket.recv(4096)
                 connector.parseData(data, address, sslcsocket)
+
                 # close connection
                 sslcsocket.shutdown()
                 sslcsocket.close()

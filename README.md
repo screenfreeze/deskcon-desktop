@@ -2,7 +2,7 @@ DeskCon
 -------
 
 integrates your Android Device in the Desktop. Receive Notifications, Files
-and Commands from your mobile Device on your Desktop PC. The Data is send via a
+and Commands from your mobile Device on your Desktop PC. The Data is send over a
 secure TLS Connection. The Connection is encrypted and authenticated with
 self-signed Certificates (RSA-2048 PK).
 
@@ -26,8 +26,9 @@ Requirements (Desktop Server):
 
 Install:
 --------
+    - make sure Ports 8082 and 8026 tcp are open
     - start deskcon.sh in Root Folder of the Project
-    - (optional) copy the Gnome Shell Extension to ~/.local/share/gnome-shell/extensions
+    - (optional) copy the Gnome Shell (3.8) Extension to ~/.local/share/gnome-shell/extensions
       and activate it 
     
 
