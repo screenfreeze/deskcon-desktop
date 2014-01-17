@@ -8,6 +8,7 @@ from dbus import glib
 from dbus.mainloop.glib import DBusGMainLoop
 glib.init_threads()
 
+
 class IndicatorDeskCon:
     def __init__(self):
         self.ind = appindicator.Indicator.new(
@@ -29,8 +30,14 @@ class IndicatorDeskCon:
         self.devicelist = {}
     
     def update(self):
-        jsonstr = self.dbusclient.getStats()
+        try:
+            jsonstr = self.dbusclient.getStats()
+        except Exception:
+            jsonstr = "{}"
         data = json.loads(jsonstr)
+
+        if (not data.has_key('phones')):
+            return
         devices = data['phones']
 
         for device in devices:
@@ -97,13 +104,17 @@ class DbusClient():
     def __init__(self, indicator):
         self.indicator = indicator
         bus = dbus.SessionBus()
-        proxy = bus.get_object("net.screenfreeze.desktopconnector",
-                                       "/net/screenfreeze/desktopconnector"
-                                      )
-
-        self.iface = dbus.Interface(proxy, 'net.screenfreeze.desktopconnector')
-        
-        self.iface.connect_to_signal('changed', self.indicator.update)
+        try:
+            proxy = bus.get_object("net.screenfreeze.desktopconnector",
+                                   "/net/screenfreeze/desktopconnector",
+                                   True, True)
+            self.iface = dbus.Interface(proxy, 'net.screenfreeze.desktopconnector')
+        except Exception:
+            print "dbus error"  
+       
+        bus.add_signal_receiver(self.indicator.update,
+                        dbus_interface="net.screenfreeze.desktopconnector",
+                        signal_name="changed")
         #self.iface.connect_to_signal('new_notification', on_new_notification)
 
     def run(self):
@@ -124,3 +135,5 @@ class DbusClient():
 if __name__ == "__main__":
     ind = IndicatorDeskCon()
     ind.main()
+
+
