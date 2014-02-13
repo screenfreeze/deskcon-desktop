@@ -194,9 +194,11 @@ class Connector():
                 sslserversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)     
                 sslserversocket.bind(('', newport)) 
                 sslserversocket.listen(1)
+                print "sending nport"
                 csocket.sendall(str(newport))
-
+                print "wait for ssl con"
                 sslcsocket, ssladdress = sslserversocket.accept()
+                print "ssl connected"
                 sslserversocket.close()
                 
                 # receive data

@@ -2,6 +2,7 @@
 
 import dbus
 import json
+import os
 from gi.repository import GObject, Gtk
 from gi.repository import AppIndicator3 as appindicator
 from dbus import glib
@@ -11,9 +12,10 @@ glib.init_threads()
 
 class IndicatorDeskCon:
     def __init__(self):
-        self.ind = appindicator.Indicator.new(
-                            "indicator-deskcon", 
-                            "phone",
+        workingdir = os.getcwd()
+
+        self.ind = appindicator.Indicator.new("indicator-deskcon", 
+                            workingdir+"/indicator-deskcon.svg",
                             appindicator.IndicatorCategory.APPLICATION_STATUS)
 
         self.ind.set_status (appindicator.IndicatorStatus.ACTIVE)
@@ -46,13 +48,25 @@ class IndicatorDeskCon:
                 self.devicelist[uuid].update(device)
             else:
                 newdevice = DeviceMenuBundle(self, device)
-                self.devicelist[uuid] = newdevice            
+                self.devicelist[uuid] = newdevice
+
+    def notificationhandler(self):
+        notification = self.dbusclient.getNotifications().split('::')
+        uuid = notification[0]
+        text = notification[1]
+
+        if (self.devicelist.has_key(uuid)):
+            self.devicelist[uuid].addnotification(text)
+        else:
+            self.update()
+            self.devicelist[uuid].addnotification(text)      
+
     
     def handler_menu_exit(self, evt):
         Gtk.main_quit()
 
-    def compose(self, evt):
-        self.dbusclient.compose()
+    def compose(self, evt, ip, port):
+        self.dbusclient.compose(ip, port)
 
     def main(self):
         self.dbusclient.run()
@@ -63,7 +77,8 @@ class DeviceMenuBundle():
     def __init__(self, indicator, data):
         self.indicator = indicator
         # is first check
-        if (len(self.indicator.menu.get_children()) > 0 ):
+        menucnt = len(self.indicator.menu.get_children())
+        if (menucnt > 0):
             separator = Gtk.SeparatorMenuItem()
             separator.show()
             self.indicator.menu.append(separator)
@@ -73,7 +88,8 @@ class DeviceMenuBundle():
         self.indicator.menu.append(self.statsitem)
         if (data['canmessage']):
             self.composeitem = Gtk.MenuItem("     Compose Message ...")
-            self.composeitem.connect("activate", self.indicator.compose)
+            self.composeitem.connect("activate", self.indicator.compose, 
+                            data['ip'], data['controlport'])
             self.composeitem.show()
             self.indicator.menu.append(self.composeitem)
 
@@ -95,9 +111,27 @@ class DeviceMenuBundle():
         text = (name+
                 "\n     Volume: "+volume+"%   Battery: "+battery+"%"+
                 "\n     Storage: "+storage+"%"+
-                missedtxt)
+                missedtxt+ "\nNotifications:")
 
         self.statsitem.set_label(text)
+
+    def addnotification(self, text):
+        notificationitem = Gtk.MenuItem(text)
+        notificationitem.show()
+        notificationitem.connect("activate", self.removenotification, notificationitem)
+        pos = self.getmenuposition() + 1
+        self.indicator.menu.insert(notificationitem, pos)
+
+    def removenotification(self, widget, notification):
+        notification.destroy()
+
+    # get pos child poc in menu
+    def getmenuposition(self):
+        pos = 0
+        for child in self.indicator.menu.get_children():
+            if (child == self.statsitem):
+                return pos
+            pos = pos + 1
 
 
 class DbusClient():
@@ -115,7 +149,9 @@ class DbusClient():
         bus.add_signal_receiver(self.indicator.update,
                         dbus_interface="net.screenfreeze.desktopconnector",
                         signal_name="changed")
-        #self.iface.connect_to_signal('new_notification', on_new_notification)
+        bus.add_signal_receiver(self.indicator.notificationhandler,
+                        dbus_interface="net.screenfreeze.desktopconnector",
+                        signal_name="new_notification")
 
     def run(self):
         DBusGMainLoop(set_as_default=True)        
@@ -126,10 +162,10 @@ class DbusClient():
         return self.iface.stats()
 
     def getNotifications(self):
-        print self.iface.notification()
+        return self.iface.notification()
 
-    def compose(self):
-        print self.iface.compose_sms("192.168.0.29")
+    def compose(self, ip, port):
+        print self.iface.compose_sms(ip)
 
 
 if __name__ == "__main__":
