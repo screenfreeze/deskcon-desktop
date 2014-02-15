@@ -10,6 +10,7 @@ import os
 import notificationmanager
 import filetransfer
 import authentication
+import threading
 import configmanager
 from gi.repository import Gio, GLib, Gtk, GObject, Gdk
 from OpenSSL import SSL, crypto
@@ -17,6 +18,7 @@ from dbusservice import DbusThread
 
 HOST = configmanager.get_bindip()
 PORT = int(configmanager.get_port())
+SECUREPORT = int(configmanager.secure_port)
 PROGRAMDIR = os.getcwd()
 BUFFERSIZE = 4096
 
@@ -35,10 +37,13 @@ class Connector():
 
         SocketServer.TCPServer.allow_reuse_address = True
         self.server = self.TCPServer((HOST, PORT), self.TCPHandler, self)
+        self.sslserver = sslserver(self)
+        self.sslserver.daemon = True
 
     def run(self):
         GObject.threads_init()
-        self.dbus_service_thread.start()        
+        self.dbus_service_thread.start()   
+        self.sslserver.start()     
         self.server.serve_forever()
 
     def get_mid_info(self):
@@ -159,7 +164,7 @@ class Connector():
         #print json.dumps(self.mid_info)
 
 
-    class TCPServer(SocketServer.TCPServer):
+    class TCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 
         def __init__(self, server_address, RequestHandlerClass, connector):
             SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
@@ -178,40 +183,13 @@ class Connector():
             if req=="P":
                 authentication.pair(csocket)
                     
-            elif req=="C":        
-                # Initialize context
-                ctx = SSL.Context(SSL.SSLv23_METHOD)
-                ctx.set_options(SSL.OP_NO_SSLv2|SSL.OP_NO_SSLv3) #TLS1 and up
-                ctx.set_verify(SSL.VERIFY_PEER|SSL.VERIFY_FAIL_IF_NO_PEER_CERT, verify_cb) #Demand a certificate
-                ctx.use_privatekey_file(configmanager.privatekeypath)
-                ctx.use_certificate_file(configmanager.certificatepath)
-                ctx.load_verify_locations(configmanager.cafilepath)                
-                sslserversocket = SSL.Connection(ctx, socket.socket(socket.AF_INET,
-                                     socket.SOCK_STREAM))                
+            elif req=="C":
                 #negotiate new secure connection port
-                newport = 8026
-                
-                sslserversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)     
-                sslserversocket.bind(('', newport)) 
-                sslserversocket.listen(1)
-                print "sending nport"
+                newport = SECUREPORT                
                 csocket.sendall(str(newport))
-                print "wait for ssl con"
-                sslcsocket, ssladdress = sslserversocket.accept()
-                print "ssl connected"
-                sslserversocket.close()
-                
-                # receive data
-                data = sslcsocket.recv(4096)
-                connector.parseData(data, address, sslcsocket)
-
-                # close connection
-                sslcsocket.shutdown()
-                sslcsocket.close()
               
             csocket.close()
-            # emit new data dbus Signal      
-            connector.dbus_service_thread.emit_changed_signal()
+
 
 
     def compose_sms(self, number, ip, port):
@@ -227,6 +205,43 @@ class Connector():
         else:
             subprocess.Popen(["xdg-open", path], stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+
+class sslserver(threading.Thread):
+
+    def __init__(self, conn):
+        threading.Thread.__init__(self)
+        self.conn = conn
+
+    def run(self):
+            # Initialize context
+        ctx = SSL.Context(SSL.SSLv23_METHOD)
+        ctx.set_options(SSL.OP_NO_SSLv2|SSL.OP_NO_SSLv3) #TLS1 and up
+        ctx.set_verify(SSL.VERIFY_PEER|SSL.VERIFY_FAIL_IF_NO_PEER_CERT, verify_cb) #Demand a certificate
+        ctx.use_privatekey_file(configmanager.privatekeypath)
+        ctx.use_certificate_file(configmanager.certificatepath)
+        ctx.load_verify_locations(configmanager.cafilepath)                
+        sslserversocket = SSL.Connection(ctx, socket.socket(socket.AF_INET,
+                             socket.SOCK_STREAM))                
+        #negotiate new secure connection port
+        newport = SECUREPORT   
+        sslserversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)     
+        sslserversocket.bind(('', newport)) 
+        sslserversocket.listen(5)
+        while True:
+                sslcsocket, ssladdress = sslserversocket.accept()
+                address = format(ssladdress[0])
+                print "SSL connected"                
+                # receive data
+                data = sslcsocket.recv(4096)
+                self.conn.parseData(data, address, sslcsocket)
+                # emit new data dbus Signal      
+                self.conn.dbus_service_thread.emit_changed_signal()
+
+                # close connection
+                sslcsocket.shutdown()
+                sslcsocket.close() 
 
 
 def verify_cb(conn, cert, errnum, depth, ok):

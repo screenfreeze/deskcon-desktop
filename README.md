@@ -44,7 +44,6 @@ Usage:
 
 Todo:
 -----
-	- Unity Indicator
 	- Translations
 	- Mac/Windows support
 	- multi File upload
@@ -58,3 +57,4 @@ Bugs:
 -----
 	- can't send Picasa Pictures
 	- UI Design
+	- Notifications stop at some point
