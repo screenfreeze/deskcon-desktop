@@ -197,6 +197,8 @@ class Connector():
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def open_file(self, path):
+        if (path == ""):
+            path = configmanager.downloaddir
         if platform.system() == "Windows":
             os.startfile(path)
         elif platform.system() == "Darwin":

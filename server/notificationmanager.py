@@ -94,7 +94,7 @@ class FileReceivedNotification(threading.Thread):
         self.callback = callback  
         self.nnotification = Notify.Notification.new ("File received", filenames, "phone")
         self.nnotification.add_action("open_path","open", self.open_file, filenames, None)
-        self.nnotification.add_action("open_folder","open Folder", self.open_folder, "." , None)
+        self.nnotification.add_action("open_folder","open Folder", self.open_folder, "" , None)
 
     def run(self):
         GObject.threads_init()
@@ -107,7 +107,7 @@ class FileReceivedNotification(threading.Thread):
 
     def open_folder(self, ac_name, args, a):
         Gtk.main_quit()
-        self.callback(".")
+        self.callback("")
 
 
 class SMSReceivedNotification(threading.Thread):
