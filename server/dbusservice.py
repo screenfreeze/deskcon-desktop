@@ -40,8 +40,10 @@ class DbusThread(threading.Thread):
             return self.connector.get_last_notification()
 
         @dbus.service.method(dbusname, in_signature='s')
-        def compose_sms(self, ip):
-            self.connector.compose_sms("",ip,"9096")
+        def compose_sms(self, host):
+            ip = host.split(":")[0]
+            port = host.split(":")[1]
+            self.connector.compose_sms("",ip,port)
 
         @dbus.service.signal(dbusname)
         def changed(self):

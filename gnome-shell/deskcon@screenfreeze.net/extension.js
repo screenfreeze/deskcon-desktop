@@ -60,8 +60,9 @@ const DBusClient = new Lang.Class({
         let jsonstr = ui.get_string()[0];
         return jsonstr;
     },
-    composesms: function(ip) {
-        let parameters = new GLib.Variant('(s)', [ip]);
+    composesms: function(ip, port) {
+        host = ip + ":" + port;
+        let parameters = new GLib.Variant('(s)', [host]);
         this.proxy.call_sync('compose_sms', parameters, 0, 1000, null);
     },
 });
@@ -122,7 +123,7 @@ const PhonesMenuItem = new Lang.Class({
         let missedcallsstr = "";
 
         this._ip = info.ip;
-        this._port = info.port;
+        this._port = info.controlport;
         let can_message = info.canmessage;
 
         //missedstrs
@@ -190,7 +191,7 @@ const PhonesMenuItem = new Lang.Class({
     },
 
     composemsg: function(event) {
-        dbusclient.composesms(this._ip);
+        dbusclient.composesms(this._ip, this._port);
         _indicator.menu.close();
     },
 
