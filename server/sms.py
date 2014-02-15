@@ -6,62 +6,56 @@ import socket
 import configmanager
 import json
 from OpenSSL import SSL, crypto
-from gi.repository import Gio, GLib, Gtk, GObject, Gdk
+from gi.repository import Gtk, GObject
 
-class EntryWindow(Gtk.Window):
+class EntryWindow():
 
     def __init__(self, ip, port, number):
-        Gtk.Window.__init__(self, title="Compose")
-        self.set_wmclass ("DeskCon", "Compose")
-        self.set_size_request(420, 300)
-        self.set_icon_name("phone")
+
+        builder = Gtk.Builder()
+        builder.add_from_file(os.getcwd()+"/share/ui/sms.glade")
+        builder.connect_signals(self)
+        self.window = builder.get_object("smswindow")
+        self.numberentry = builder.get_object("numberentry")
+        self.messagetextview = builder.get_object("messagetextview")
+        self.charlabel = builder.get_object("charcountlabel")
+        self.errordialog = builder.get_object("errordialog")
+
+        self.window.set_wmclass ("DeskCon", "Compose")
 
         self.ip = ip
         self.port = port
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.add(vbox)
+        self.numberentry.set_text(number)
+        self.textbuffer = self.messagetextview.get_buffer()
+        self.window.show_all()
 
-        numberlabel = Gtk.Label("Number")
-        numberlabel.set_padding(5,0)
-        numberlabel.set_alignment(0, 0)
-        self.entry = Gtk.Entry()
-        self.entry.set_text(number)
-        vbox.pack_start(numberlabel, False, False, 0)
-        vbox.pack_start(self.entry, False, True, 0)
-
-        self.textview = Gtk.TextView()
-        self.textbuffer = self.textview.get_buffer()
-        vbox.pack_start(self.textview, True, True, 5)
-
-        hbox = Gtk.Box(spacing=6)
-        vbox.pack_start(hbox, False, False, 5)
-        
-        self.cancelbutton = Gtk.Button(label="cancel")
-        self.cancelbutton.connect("clicked", self.on_cancel_button_clicked)
-        self.button = Gtk.Button(label="send")
-        self.button.connect("clicked", self.on_button_clicked)
-        hbox.pack_start(self.cancelbutton, True, True, 5)
-        hbox.pack_start(self.button, True, True, 5)
-
-    def on_button_clicked(self, widget):
+    def on_sendbutton_clicked(self, widget):
         siter = self.textbuffer.get_start_iter()
         eiter = self.textbuffer.get_end_iter()
         txt = self.textbuffer.get_text(siter, eiter,  False)
-        number = self.entry.get_text()
-        send_sms(number.strip(),txt.strip(), self.ip, self.port)
+        number = self.numberentry.get_text()
+        send_sms(number.strip(),txt.strip(), self.ip, self.port, self.errordialog)
+        
+
+    def on_cancelbutton_clicked(self, widget):
         Gtk.main_quit()
 
-    def on_cancel_button_clicked(self, widget):
+    def on_smswindow_destroy(self, *args):
+        Gtk.main_quit(*args)
+
+    def on_errordialog_close(self, widget):
         Gtk.main_quit()
 
 
-def send_sms(recver, msg, ip, port):
+def send_sms(recver, msg, ip, port, errordialog):
     HOST, PORT = ip, int(port)
+    uuid = configmanager.uuid
+    hostname = socket.gethostname()
 
-    jsonobj = {'uuid': "000000001111111", 'name': "Hostname", 
+    jsonobj = {'uuid': uuid, 'name': hostname, 
                'type': "sms", 'data': {'number': recver, 'message': msg}}
-    #data = recver+"::"+msg
+
     data = json.dumps(jsonobj)
 
     # Initialize context
@@ -73,13 +67,30 @@ def send_sms(recver, msg, ip, port):
     ctx.load_verify_locations(configmanager.cafilepath)                
     sslclientsocket = SSL.Connection(ctx, socket.socket(socket.AF_INET, socket.SOCK_STREAM))
 
+    succ = False
     try:
         sslclientsocket.connect((HOST, PORT))
         sslclientsocket.sendall(data)
         sslclientsocket.recv(2)
+        succ = True
+
+    except Exception as e:
+        errnum = e[0]
+        print "Error " + str(e[0])
+        if (errnum == -5):
+            errordialog.format_secondary_text("The Device is not reachable. Maybe it's not on your Network")
+        else:
+            errordialog.format_secondary_text("Errornumber "+str(errnum))
+        errordialog.run()
+        errordialog.hide()
+
     finally:
-        sslclientsocket.shutdown()
-        sslclientsocket.close()
+        if (succ):
+            sslclientsocket.shutdown()
+            sslclientsocket.close()
+            Gtk.main_quit()
+
+
 
 def verify_cb(conn, cert, errnum, depth, ok):
     # This obviously has to be updated
@@ -98,9 +109,6 @@ def main(args):
         number = ""
 
     win = EntryWindow(ip, port, number)
-    win.connect("destroy", Gtk.main_quit)
-    win.set_position(Gtk.WindowPosition.CENTER)
-    win.show_all()
     Gtk.main()
 
 
