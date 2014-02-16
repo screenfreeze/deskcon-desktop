@@ -33,9 +33,19 @@ class EntryWindow():
     def on_sendbutton_clicked(self, widget):
         siter = self.textbuffer.get_start_iter()
         eiter = self.textbuffer.get_end_iter()
-        txt = self.textbuffer.get_text(siter, eiter,  False)
-        number = self.numberentry.get_text()
-        send_sms(number.strip(),txt.strip(), self.ip, self.port, self.errordialog)
+        txt = self.textbuffer.get_text(siter, eiter,  False).strip()
+        number = self.numberentry.get_text().strip()
+
+        if (number == ""):
+            self.errordialog.format_secondary_text("No Number.")
+            self.errordialog.run()
+            self.errordialog.hide()
+        elif (txt == ""):
+            self.errordialog.format_secondary_text("Text is empty.")
+            self.errordialog.run()
+            self.errordialog.hide()
+        else:
+            send_sms(number,txt, self.ip, self.port, self.errordialog)
         
 
     def on_cancelbutton_clicked(self, widget):
