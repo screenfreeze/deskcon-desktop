@@ -217,7 +217,7 @@ class sslserver(threading.Thread):
         self.conn = conn
 
     def run(self):
-            # Initialize context
+        # Initialize context
         ctx = SSL.Context(SSL.SSLv23_METHOD)
         ctx.set_options(SSL.OP_NO_SSLv2|SSL.OP_NO_SSLv3) #TLS1 and up
         ctx.set_verify(SSL.VERIFY_PEER|SSL.VERIFY_FAIL_IF_NO_PEER_CERT, verify_cb) #Demand a certificate
@@ -226,24 +226,28 @@ class sslserver(threading.Thread):
         ctx.load_verify_locations(configmanager.cafilepath)                
         sslserversocket = SSL.Connection(ctx, socket.socket(socket.AF_INET,
                              socket.SOCK_STREAM))                
-        #negotiate new secure connection port
+        # negotiate new secure connection port
         newport = SECUREPORT   
         sslserversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)     
         sslserversocket.bind(('', newport)) 
         sslserversocket.listen(5)
         while True:
-                sslcsocket, ssladdress = sslserversocket.accept()
-                address = format(ssladdress[0])
-                print "SSL connected"                
-                # receive data
-                data = sslcsocket.recv(4096)
-                self.conn.parseData(data, address, sslcsocket)
-                # emit new data dbus Signal      
-                self.conn.dbus_service_thread.emit_changed_signal()
-
-                # close connection
-                sslcsocket.shutdown()
-                sslcsocket.close() 
+                try:
+                    sslcsocket, ssladdress = sslserversocket.accept()
+                    address = format(ssladdress[0])
+                    print "SSL connected"                
+                    # receive data
+                    data = sslcsocket.recv(4096)
+                    self.conn.parseData(data, address, sslcsocket)
+                    # emit new data dbus Signal      
+                    self.conn.dbus_service_thread.emit_changed_signal()
+                except Exception as e:
+                    errnum = e[0]
+                    print "Error " + str(e[0])
+                finally:
+                    # close connection
+                    sslcsocket.shutdown()
+                    sslcsocket.close() 
 
 
 def verify_cb(conn, cert, errnum, depth, ok):
