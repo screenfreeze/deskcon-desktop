@@ -10,12 +10,13 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.1"
-   width="32"
-   height="32"
-   id="svg2985"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   id="svg2"
+   xml:space="preserve"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="sphone-symbolic.svg">
-  <sodipodi:namedview
+   sodipodi:docname="drawing-symbolic.svg"><sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1"
@@ -24,37 +25,71 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="640"
-     inkscape:window-height="480"
-     id="namedview9"
+     inkscape:window-width="1920"
+     inkscape:window-height="1028"
+     id="namedview10"
      showgrid="false"
-     inkscape:zoom="7.375"
-     inkscape:cx="16"
-     inkscape:cy="16"
-     inkscape:window-x="828"
-     inkscape:window-y="362"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="svg2985" />
-  <defs
-     id="defs2987" />
-  <metadata
-     id="metadata2990">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <rect
-     width="18.083992"
-     height="24.432442"
-     ry="0.57823831"
-     x="6.9731135"
-     y="4.4384108"
-     id="rect2989"
-     style="fill:#bfbfbf;fill-opacity:0;stroke:#bfbfbf;stroke-width:5.58902836;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-</svg>
+     inkscape:zoom="14.75"
+     inkscape:cx="8.2711864"
+     inkscape:cy="8"
+     inkscape:window-x="1920"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g2987"
+     showguides="true"><sodipodi:guide
+       position="0,0"
+       orientation="0,16"
+       id="guide3814" /><sodipodi:guide
+       position="16,0"
+       orientation="-16,0"
+       id="guide3816" /><sodipodi:guide
+       position="16,16"
+       orientation="0,-16"
+       id="guide3818" /><sodipodi:guide
+       position="0,16"
+       orientation="16,0"
+       id="guide3820" /></sodipodi:namedview><metadata
+     id="metadata17"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
+     id="defs15" /><g
+     id="g3027"
+     transform="matrix(0.18877849,0,0,0.15600138,2.4576275,0.28813605)"
+     style="fill:#bebebe;fill-opacity:1"><g
+       id="g2987"
+       style="fill:#bebebe;fill-opacity:1"><path
+         id="path2989"
+         d="m 48.718266,0.43458978 -38,0 c -5.4999997,0 -9.99999974,4.53991132 -9.99999974,10.08869122 l 0,78.691796 c 0,5.548781 4.50000004,10.088692 9.99999974,10.088692 l 38,0 c 5.5,0 10,-4.539911 10,-10.088692 l 0,-78.691796 c 0,-5.5487799 -4.5,-10.08869122 -10,-10.08869122 z m -19,92.66075322 c -3.865,0 -7,-2.257849 -7,-5.044346 0,-2.786496 3.135,-5.044346 7,-5.044346 3.864,0 7,2.25785 7,5.044346 0,2.787506 -3.136,5.044346 -7,5.044346 z m 18.126935,-16.029199 -36.25387,0 0,-60.447145 36.25387,0 z"
+         inkscape:connector-curvature="0"
+         style="fill:#bebebe;fill-opacity:1"
+         sodipodi:nodetypes="ssssssssssssssccccc" /></g><g
+       id="g2991"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g2993"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g2995"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g2997"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g2999"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3001"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3003"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3005"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3007"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3009"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3011"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3013"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3015"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3017"
+       style="fill:#bebebe;fill-opacity:1" /><g
+       id="g3019"
+       style="fill:#bebebe;fill-opacity:1" /></g></svg>
