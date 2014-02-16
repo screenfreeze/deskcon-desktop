@@ -165,7 +165,8 @@ class DbusClient():
         return self.iface.notification()
 
     def compose(self, ip, port):
-        print self.iface.compose_sms(ip)
+        host = ip + ":" + str(port)
+        self.iface.compose_sms(host)
 
 
 if __name__ == "__main__":
