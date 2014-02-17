@@ -23,8 +23,8 @@ def buildTransientNotification(header, body):
     notification.set_timeout(1)
     notification.show()
 
-def buildIncomingFileNotification(filenames, csocket):
-    filenotification_thread = FileNotification(filenames, csocket)
+def buildIncomingFileNotification(filenames, name):
+    filenotification_thread = FileNotification(filenames, name)
     value = filenotification_thread.run()
     return value
 
@@ -40,15 +40,18 @@ def buildSMSReceivedNotification(name, number, message, ip, port, callback):
 
 
 class FileNotification(threading.Thread):
-    def __init__(self, filenames, csocket):    
+    def __init__(self, filenames, name):
         threading.Thread.__init__(self)   
-        self.csocket = csocket
         self.filenames = filenames
+        filestxt = ""
+        for filename in self.filenames:
+            filestxt = filestxt + "\n" + filename
+
         self.waiting_for_user_input = True   
         self.accepted = False     
         self.file_notification = Notify.Notification.new ("File upload", 
-                                                        "incoming File\n"+self.filenames+
-                                                        "\nfrom ","phone")
+                                                        "incoming File"+filestxt+
+                                                        "\nfrom "+name,"phone")
         self.file_notification.add_action("acc_file","accept", self.accept,None, None)
         self.file_notification.add_action("cancel_file","cancel", self.cancel,None, None)    
 
@@ -91,9 +94,15 @@ class FileReceivedNotification(threading.Thread):
     def __init__(self, filenames, callback):
         threading.Thread.__init__(self)       
         self.filenames = filenames  
-        self.callback = callback  
-        self.nnotification = Notify.Notification.new ("File received", filenames, "phone")
-        self.nnotification.add_action("open_path","open", self.open_file, filenames, None)
+        self.callback = callback
+        filestxt = ""
+        for filename in self.filenames:
+            filestxt = filestxt + "\n" + filename
+        filestxt = filestxt.lstrip("\n")
+
+        self.nnotification = Notify.Notification.new ("File received", filestxt, "phone")
+        if (len(self.filenames) == 1):
+            self.nnotification.add_action("open_path","open", self.open_file, filenames[0], None)
         self.nnotification.add_action("open_folder","open Folder", self.open_folder, "" , None)
 
     def run(self):

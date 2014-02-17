@@ -6,13 +6,22 @@ import configmanager
 DOWNLOAD_DIR = configmanager.get_download_dir()
 
 def write_files(filenames, csocket):
-    fname = filenames
+    print "write files"
+    csocket.sendall('1') # accept send
+
+    filepaths = []
+    for filename in filenames:
+        filepath = write_file(filename, csocket)
+        filepaths.append(filepath)
+
+    return filepaths
+
+
+def write_file(filename, csocket):    
     recsocket = csocket
-    print fname
-    filepath = DOWNLOAD_DIR + fname
+    filepath = DOWNLOAD_DIR + filename
     
     nfile = open(filepath, 'wb')
-    recsocket.sendall('1')
     filesize = int(recsocket.recv(4096))
     loopcnt = filesize/4096
     if filesize%4096 != 0:
@@ -24,7 +33,4 @@ def write_files(filenames, csocket):
         nfile.write(data_chunk)
     nfile.close()
 
-    #notificationmanager.buildFileReceivedNotification(filepath)
     return filepath
-
-

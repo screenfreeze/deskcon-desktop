@@ -145,17 +145,17 @@ class Connector():
                     notificationmanager.buildTransientNotification(name, message)
 
         elif (msgtype == "FILE_UP"):
-            fname = message
+            filenames = json.loads(message)
             if (AUTO_ACCEPT_FILES):
                 print "accepted"
-                filetransfer.write_files(fname, csocket)
+                filetransfer.write_files(filenames, csocket)
             else:
-                accepted = notificationmanager.buildIncomingFileNotification(fname, csocket)
+                accepted = notificationmanager.buildIncomingFileNotification(filenames, name)
                 print "wait for ui"       
                 if (accepted):
                     print "accepted"
-                    fpath = filetransfer.write_files(fname, csocket)
-                    notificationmanager.buildFileReceivedNotification(fpath, self.open_file)
+                    fpaths = filetransfer.write_files(filenames, csocket)
+                    notificationmanager.buildFileReceivedNotification(fpaths, self.open_file)
                 else:
                     print "not accepted"
         else:
