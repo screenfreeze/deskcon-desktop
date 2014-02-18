@@ -1,3 +1,6 @@
+# DesCon Desktop Server
+# Version 0.2
+
 import socket
 import SocketServer
 import webbrowser
@@ -218,12 +221,17 @@ class sslserver(threading.Thread):
 
     def run(self):
         # Initialize context
-        ctx = SSL.Context(SSL.SSLv23_METHOD)
-        ctx.set_options(SSL.OP_NO_SSLv2|SSL.OP_NO_SSLv3) #TLS1 and up
-        ctx.set_verify(SSL.VERIFY_PEER|SSL.VERIFY_FAIL_IF_NO_PEER_CERT, verify_cb) #Demand a certificate
-        ctx.use_privatekey_file(configmanager.privatekeypath)
-        ctx.use_certificate_file(configmanager.certificatepath)
-        ctx.load_verify_locations(configmanager.cafilepath)                
+        try:
+            ctx = SSL.Context(SSL.SSLv23_METHOD)
+            ctx.set_options(SSL.OP_NO_SSLv2|SSL.OP_NO_SSLv3) #TLS1 and up
+            ctx.set_verify(SSL.VERIFY_PEER|SSL.VERIFY_FAIL_IF_NO_PEER_CERT, verify_cb) #Demand a certificate
+            ctx.use_privatekey_file(configmanager.privatekeypath)
+            ctx.use_certificate_file(configmanager.certificatepath)
+            ctx.load_verify_locations(configmanager.cafilepath)
+        except Exception as e:
+            error = e[0]
+            if (len(error)>0):  # ignore empty cafile error
+                print error
         sslserversocket = SSL.Connection(ctx, socket.socket(socket.AF_INET,
                              socket.SOCK_STREAM))                
         # negotiate new secure connection port

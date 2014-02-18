@@ -1,5 +1,6 @@
 DeskCon
 -------
+Version 0.2
 
 integrates your Android Device in the Desktop. Receive Notifications, Files
 and Commands from your mobile Device on your Desktop PC. The Data is send over a
@@ -28,7 +29,7 @@ Install:
 --------
     - make sure Ports 8082 and 8026 tcp are open
     - start deskcon.sh in Root Folder of the Project
-    - (optional) copy the Gnome Shell (3.8) Extension to ~/.local/share/gnome-shell/extensions
+    - (optional) copy the Gnome Shell (>=3.8) Extension to ~/.local/share/gnome-shell/extensions
       and activate it 
     
 
@@ -46,7 +47,6 @@ Todo:
 -----
 	- Translations
 	- Mac/Windows support
-	- multi File upload
 	- Media Control
 	- send Files to Android
 	- Fingerprint validation via QR Code
