@@ -94,9 +94,9 @@ class Connector():
             if (newstats.has_key('battery')): 
                 self.mid_info['phones'][pos]['battery'] = newstats['battery']
                 self.mid_info['phones'][pos]['batterystate'] = newstats['batterystate']
-            if (newstats.has_key('missedsmscount')): 
+            if (newstats.has_key('missedmsgs')): 
                 self.mid_info['phones'][pos]['missedsmscount'] = newstats['missedmsgs']
-            if (newstats.has_key('missedcallcount')): 
+            if (newstats.has_key('missedcalls')): 
                 self.mid_info['phones'][pos]['missedcallcount'] = newstats['missedcalls']
             if (newstats.has_key('canmessage')): 
                 self.mid_info['phones'][pos]['canmessage'] = newstats['canmessage']
