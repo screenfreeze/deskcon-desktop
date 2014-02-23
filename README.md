@@ -47,7 +47,6 @@ Todo:
 -----
 	- Translations
 	- Mac/Windows support
-	- Media Control
 	- send Files to Android
 	- Fingerprint validation via QR Code
 	- Browser Extensions

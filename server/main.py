@@ -14,7 +14,9 @@ import notificationmanager
 import filetransfer
 import authentication
 import threading
+import thread
 import configmanager
+import mediacontrol
 from gi.repository import Gio, GLib, Gtk, GObject, Gdk
 from OpenSSL import SSL, crypto
 from dbusservice import DbusThread
@@ -161,6 +163,10 @@ class Connector():
                     notificationmanager.buildFileReceivedNotification(fpaths, self.open_file)
                 else:
                     print "not accepted"
+
+        elif (msgtype == "MEDIACTRL"):
+            thread.start_new_thread(mediacontrol.control, (message,))
+
         else:
             print "ERROR: Non parsable Data received"
 
