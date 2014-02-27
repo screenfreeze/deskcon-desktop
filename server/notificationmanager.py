@@ -124,7 +124,7 @@ class SMSReceivedNotification(threading.Thread):
         threading.Thread.__init__(self)       
         self.number = number    
         self.ip = ip
-        self.port = port
+        self.port = str(port)
         self.callback = callback
         if name == "":
             name = number
