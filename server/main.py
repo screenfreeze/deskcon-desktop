@@ -205,6 +205,11 @@ class Connector():
         subprocess.Popen([PROGRAMDIR+"/sms.py", ip, port, number], stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    def ping_device(self, ip, port):
+        print "ping_device"
+        subprocess.Popen([PROGRAMDIR+"/ping.py", ip, port], stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
     def open_file(self, path):
         if (path == ""):
             path = configmanager.downloaddir

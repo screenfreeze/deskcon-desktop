@@ -54,7 +54,6 @@ def pair(clientsocket):
     
     fpdiag = subprocess.Popen([PROGRAMDIR+"/fingerprints.py", myfp, devicefp], stdout=subprocess.PIPE)
     (vout, verr) = fpdiag.communicate()
-    print vout
 
     if (vout.strip()=="True"):
         clientsocket.sendall("OK\n")        
@@ -71,4 +70,5 @@ def pair(clientsocket):
 
     else:
         print "Failed to pair Device."
+
 

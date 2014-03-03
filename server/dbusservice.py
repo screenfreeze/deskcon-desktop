@@ -43,7 +43,13 @@ class DbusThread(threading.Thread):
         def compose_sms(self, host):
             ip = host.split(":")[0]
             port = host.split(":")[1]
-            self.connector.compose_sms("",ip,port)
+            self.connector.compose_sms("", ip, port)
+
+        @dbus.service.method(dbusname, in_signature='s')
+        def ping_device(self, host):
+            ip = host.split(":")[0]
+            port = host.split(":")[1]
+            self.connector.ping_device(ip, port)
 
         @dbus.service.signal(dbusname)
         def changed(self):
