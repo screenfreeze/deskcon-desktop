@@ -21,10 +21,6 @@ class IndicatorDeskCon:
         self.ind.set_status (appindicator.IndicatorStatus.ACTIVE)
 
         self.menu = Gtk.Menu()
-        #item = Gtk.MenuItem("Exit")
-        #item.connect("activate", self.handler_menu_exit)
-        #item.show()
-        #self.menu.append(item)
 
         self.menu.show()
         self.ind.set_menu(self.menu)
@@ -68,6 +64,9 @@ class IndicatorDeskCon:
     def compose(self, evt, ip, port):
         self.dbusclient.compose(ip, port)
 
+    def ping(self, evt, ip, port):
+        self.dbusclient.ping(ip, port)
+
     def main(self):
         self.dbusclient.run()
         self.update()
@@ -92,6 +91,12 @@ class DeviceMenuBundle():
                             data['ip'], data['controlport'])
             self.composeitem.show()
             self.indicator.menu.append(self.composeitem)
+
+        self.pingitem = Gtk.MenuItem("     Ping")
+        self.pingitem.connect("activate", self.indicator.ping, 
+                        data['ip'], data['controlport'])
+        self.pingitem.show()
+        self.indicator.menu.append(self.pingitem)
 
         self.update(data)
 
@@ -168,9 +173,11 @@ class DbusClient():
         host = ip + ":" + str(port)
         self.iface.compose_sms(host)
 
+    def ping(self, ip, port):
+        host = ip + ":" + str(port)
+        self.iface.ping_device(host)
+
 
 if __name__ == "__main__":
     ind = IndicatorDeskCon()
     ind.main()
-
-
