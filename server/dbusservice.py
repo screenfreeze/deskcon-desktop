@@ -51,6 +51,12 @@ class DbusThread(threading.Thread):
             port = host.split(":")[1]
             self.connector.ping_device(ip, port)
 
+        @dbus.service.method(dbusname, in_signature='s')
+        def send_file(self, host):
+            ip = host.split(":")[0]
+            port = host.split(":")[1]
+            self.connector.send_file(ip, port)
+
         @dbus.service.signal(dbusname)
         def changed(self):
             pass

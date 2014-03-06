@@ -23,6 +23,9 @@ const iface = <interface name="net.screenfreeze.desktopconnector">
 <method name="ping_device">
 <arg type="s" direction="in" name="host" />
 </method>
+<method name="send_file">
+<arg type="s" direction="in" name="host" />
+</method>
 <signal name="changed" />
 <signal name="new_notification" />
 </interface>
@@ -72,6 +75,11 @@ const DBusClient = new Lang.Class({
         host = ip + ":" + port;
         let parameters = new GLib.Variant('(s)', [host]);
         this.proxy.call_sync('ping_device', parameters, 0, 1000, null);
+    },
+    sendfile: function(ip, port) {
+        host = ip + ":" + port;
+        let parameters = new GLib.Variant('(s)', [host]);
+        this.proxy.call_sync('send_file', parameters, 0, 1000, null);
     },
 });
 
@@ -172,6 +180,8 @@ const PhonesMenuItem = new Lang.Class({
         this.compbutton.connect('clicked', Lang.bind(this, this.composemsg));
         this.pingbutton = new St.Button({style_class: 'notification-icon-button',label: "Ping"}); 
         this.pingbutton.connect('clicked', Lang.bind(this, this.ping));
+        this.sendfilebutton = new St.Button({style_class: 'notification-icon-button',label: "Send File(s)"}); 
+        this.sendfilebutton.connect('clicked', Lang.bind(this, this.sendfile));
         this.vbox.add(this.namelabel);
         this.vbox.add(this.stathbox);        
         this.vbox.add(this.storagelabel);  
@@ -183,6 +193,7 @@ const PhonesMenuItem = new Lang.Class({
             this.vbox.add(this.compbutton, { x_fill: true, expand: true });
         }
         this.vbox.add(this.pingbutton, { x_fill: true, expand: true });
+        this.vbox.add(this.sendfilebutton, { x_fill: true, expand: true });
 
         // GS 3.8 support
         if (shellversion[1] == 10) {
@@ -208,6 +219,11 @@ const PhonesMenuItem = new Lang.Class({
 
     ping: function(event) {
         dbusclient.pingdevice(this._ip, this._port);
+        _indicator.menu.close();
+    },
+
+    sendfile: function(event) {
+        dbusclient.sendfile(this._ip, this._port);
         _indicator.menu.close();
     },
 

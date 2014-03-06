@@ -206,8 +206,11 @@ class Connector():
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def ping_device(self, ip, port):
-        print "ping_device"
         subprocess.Popen([PROGRAMDIR+"/ping.py", ip, port], stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    def send_file(self, ip, port):
+        subprocess.Popen([PROGRAMDIR+"/filechooser.py", ip, port], stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def open_file(self, path):
