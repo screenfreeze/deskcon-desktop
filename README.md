@@ -27,7 +27,7 @@ Requirements (Desktop Server):
 
 Install:
 --------
-    - make sure Ports 8082 and 8026 tcp are open
+    - make sure Ports 8082 and 8083 tcp are open
     - start deskcon.sh in Root Folder of the Project
     - (optional) copy the Gnome Shell (>=3.8) Extension to ~/.local/share/gnome-shell/extensions
       and activate it 
