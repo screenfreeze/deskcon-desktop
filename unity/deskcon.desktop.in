@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=DeskCon Indicator
+Comment=DeskCon Indicator
+Exec=deskcon-indicator
+Type=Application
+Terminal=false
+StartupNotify=false
+Categories=
+OnlyShowIn=GNOME;Unity;
+X-GNOME-Autostart-Delay=5
+X-GNOME-Autostart-Phase=Application
+X-GNOME-Autostart-Notify=true

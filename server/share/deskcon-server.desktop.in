@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=DeskCon
+Comment=DeskCon Desktop Server
+Exec=deskcon-server
+Terminal=false
+StartupNotify=false
+Type=Application
+Categories=
+X-GNOME-Autostart-Phase=Application
+X-GNOME-Autostart-Notify=true
