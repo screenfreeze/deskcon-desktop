@@ -1,6 +1,6 @@
 DeskCon
 -------
-Version 0.2
+Version 0.2.5
 
 integrates your Android Device in the Desktop. Receive Notifications, Files
 and Commands from your mobile Device on your Desktop PC. The Data is send over a
@@ -47,13 +47,11 @@ Todo:
 -----
 	- Translations
 	- Mac/Windows support
-	- send Files to Android
 	- Fingerprint validation via QR Code
 	- Browser Extensions
 
 
 Bugs:
 -----
-	- can't send Picasa Pictures
 	- UI Design
 	- Notifications stop at some point
