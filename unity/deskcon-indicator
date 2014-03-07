@@ -67,6 +67,9 @@ class IndicatorDeskCon:
     def ping(self, evt, ip, port):
         self.dbusclient.ping(ip, port)
 
+    def sendfile(self, evt, ip, port):
+        self.dbusclient.send_file(ip, port)
+
     def main(self):
         self.dbusclient.run()
         self.update()
@@ -97,6 +100,12 @@ class DeviceMenuBundle():
                         data['ip'], data['controlport'])
         self.pingitem.show()
         self.indicator.menu.append(self.pingitem)
+
+        self.sendfileitem = Gtk.MenuItem("     Send File(s)")
+        self.sendfileitem.connect("activate", self.indicator.sendfile, 
+                        data['ip'], data['controlport'])
+        self.sendfileitem.show()
+        self.indicator.menu.append(self.sendfileitem)
 
         self.update(data)
 
@@ -176,6 +185,10 @@ class DbusClient():
     def ping(self, ip, port):
         host = ip + ":" + str(port)
         self.iface.ping_device(host)
+
+    def send_file(self, ip, port):
+        host = ip + ":" + str(port)
+        self.iface.send_file(host)
 
 
 if __name__ == "__main__":
