@@ -26,6 +26,8 @@ const iface = <interface name="net.screenfreeze.desktopconnector">
 <method name="send_file">
 <arg type="s" direction="in" name="host" />
 </method>
+<method name="show_settings">
+</method>
 <signal name="changed" />
 <signal name="new_notification" />
 </interface>
@@ -81,6 +83,9 @@ const DBusClient = new Lang.Class({
         let parameters = new GLib.Variant('(s)', [host]);
         this.proxy.call_sync('send_file', parameters, 0, 1000, null);
     },
+    showsettings: function() {
+        this.proxy.call_sync('show_settings', null, 0, 1000, null);
+    },
 });
 
 
@@ -132,8 +137,8 @@ const PhonesMenuItem = new Lang.Class({
     Extends: PopupMenu.PopupBaseMenuItem,  
 
     _init: function(info) {
-	    this.parent({reactive: false});
-	    this._info = info;
+        this.parent({reactive: false});
+        this._info = info;
 
         let missedmsgsstr = "";
         let missedcallsstr = "";
@@ -209,7 +214,7 @@ const PhonesMenuItem = new Lang.Class({
     },
 
     activate: function(event) {
-	    this.parent(event);
+        this.parent(event);
     },
 
     composemsg: function(event) {
@@ -275,6 +280,10 @@ const PhonesMenu = new Lang.Class({
 
         hbox.add_child(icon);
         this.actor.add_child(hbox);
+
+        let settingsbutton = new PopupMenu.PopupMenuItem("Settings");
+        settingsbutton.connect('activate', Lang.bind(this, this.show_settings));
+        this.menu.addMenuItem(settingsbutton);
     },
 
     show: function() {
@@ -284,6 +293,10 @@ const PhonesMenu = new Lang.Class({
 
     destroy: function() {
         this.parent();
+    },
+
+    show_settings: function() {
+        dbusclient.showsettings();
     },
 
 });
