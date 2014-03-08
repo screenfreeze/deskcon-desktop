@@ -26,6 +26,12 @@ class IndicatorDeskCon:
         self.ind.set_menu(self.menu)
         self.dbusclient = DbusClient(self)
         self.devicelist = {}
+
+        #Settings Button
+        self.settingsitem = Gtk.MenuItem("Settings")
+        self.settingsitem.connect("activate", self.showsettings)
+        self.settingsitem.show()
+        self.menu.append(self.settingsitem)
     
     def update(self):
         try:
@@ -69,6 +75,9 @@ class IndicatorDeskCon:
 
     def sendfile(self, evt, ip, port):
         self.dbusclient.send_file(ip, port)
+
+    def showsettings(self, evt):
+        self.dbusclient.show_settings()
 
     def main(self):
         self.dbusclient.run()
@@ -189,6 +198,9 @@ class DbusClient():
     def send_file(self, ip, port):
         host = ip + ":" + str(port)
         self.iface.send_file(host)
+
+    def show_settings(self):
+        self.iface.show_settings()
 
 
 if __name__ == "__main__":
