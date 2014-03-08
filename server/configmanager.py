@@ -11,6 +11,7 @@ default_configfile = os.getcwd()+"/share/config.conf"
 config = ConfigParser.ConfigParser()
 configdir = homedir + "/.deskcon/"
 configfile = configdir + "config.conf"
+pidfile = configdir + "server.pid"
 keydir = os.path.join(configdir, "keys")
 privatekeypath = os.path.join(keydir, "private.key")
 certificatepath = os.path.join(keydir, "server.crt")
@@ -75,4 +76,24 @@ def get_bindip():
 def get_download_dir():
     return downloaddir+"/"
 
+def write_config(datadict):
+    if (not config):
+        copy_default_config()
 
+    cfgfile = open(configfile, 'w')
+    config.set('general','download_dir', datadict['downloaddir'])
+    config.set('general','debug', datadict['debug'])
+    config.set('network','bindip', datadict['bindip'])
+    config.set('network','port', datadict['port'])
+    config.set('network','secure_port', datadict['secure_port'])
+    config.set('permissions','auto_open_urls', datadict['auto_open_urls'])
+    config.set('permissions','auto_store_clipboard', datadict['auto_store_clipboard'])
+    config.set('permissions','auto_accept_files', datadict['auto_accept_files'])
+    config.write(cfgfile)
+    cfgfile.close()
+
+#store server Process ID
+def write_pidfile(pid):
+    pfile = open(pidfile, 'w')
+    pfile.write(pid)
+    pfile.close()

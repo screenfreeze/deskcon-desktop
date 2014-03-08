@@ -21,6 +21,7 @@ from gi.repository import Gio, GLib, Gtk, GObject, Gdk
 from OpenSSL import SSL, crypto
 from dbusservice import DbusThread
 
+configmanager.write_pidfile(str(os.getpid()))
 HOST = configmanager.get_bindip()
 PORT = int(configmanager.get_port())
 SECUREPORT = int(configmanager.secure_port)
@@ -224,6 +225,10 @@ class Connector():
         else:
             subprocess.Popen(["xdg-open", path], stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    def show_settings(self):
+        subprocess.Popen([PROGRAMDIR+"/settingswindow.py"], stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 

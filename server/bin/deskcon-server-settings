@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /usr/share/deskcon-server/
+python "settingswindow.py" $@

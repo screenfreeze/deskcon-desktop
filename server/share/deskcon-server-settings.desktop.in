@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=DeskCon Settings
+Comment=Configure DeskCon
+Exec=deskcon-server-settings
+Icon=phone
+Terminal=false
+StartupNotify=true
+Type=Application
+Categories=Utility;

@@ -57,6 +57,10 @@ class DbusThread(threading.Thread):
             port = host.split(":")[1]
             self.connector.send_file(ip, port)
 
+        @dbus.service.method(dbusname)
+        def show_settings(self):
+            self.connector.show_settings()
+
         @dbus.service.signal(dbusname)
         def changed(self):
             pass
