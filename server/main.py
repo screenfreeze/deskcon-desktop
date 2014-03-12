@@ -4,6 +4,7 @@
 import socket
 import SocketServer
 import webbrowser
+import signal
 import subprocess
 import platform
 import json
@@ -23,7 +24,6 @@ from dbusservice import DbusThread
 
 configmanager.write_pidfile(str(os.getpid()))
 HOST = configmanager.get_bindip()
-PORT = int(configmanager.get_port())
 SECUREPORT = int(configmanager.secure_port)
 PROGRAMDIR = os.getcwd()
 BUFFERSIZE = 4096
@@ -32,8 +32,19 @@ AUTO_ACCEPT_FILES = configmanager.auto_accept_files
 AUTO_OPEN_URLS = configmanager.auto_open_urls
 AUTO_STORE_CLIPBOARD = configmanager.auto_store_clipboard
 
+def reload_config():
+    global HOST, SECUREPORT, AUTO_STORE_CLIPBOARD, AUTO_ACCEPT_FILES, AUTO_OPEN_URLS
+    configmanager.load()
+    HOST = configmanager.get_bindip()
+    SECUREPORT = int(configmanager.secure_port)
+    AUTO_ACCEPT_FILES = configmanager.auto_accept_files
+    AUTO_OPEN_URLS = configmanager.auto_open_urls
+    AUTO_STORE_CLIPBOARD = configmanager.auto_store_clipboard
+
 class Connector():
-    def __init__(self):     
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGUSR1, self.signal_handler)     
         self.uuid_list = {}   
         self.mid_info = {'phones': [], 'settings': {}}
         self.last_notification = "";
@@ -41,16 +52,33 @@ class Connector():
         self.dbus_service_thread = DbusThread(self)    
         self.dbus_service_thread.daemon = True        
 
-        SocketServer.TCPServer.allow_reuse_address = True
-        self.server = self.TCPServer((HOST, PORT), self.TCPHandler, self)
         self.sslserver = sslserver(self)
         self.sslserver.daemon = True
 
     def run(self):
         GObject.threads_init()
         self.dbus_service_thread.start()   
-        self.sslserver.start()     
-        self.server.serve_forever()
+        self.sslserver.start()
+        print "Server started"        
+        signal.pause()
+
+    def signal_handler(self, signum, frame):
+        if (signum == 10):
+            print "restart Server"
+            self.sslserver.stop()
+            self.sslserver.join()
+            # reload settings
+            reload_config()
+            # create new Thread
+            self.sslserver = sslserver(self)
+            self.sslserver.daemon = True
+            self.sslserver.start()
+            print "Server started"
+            signal.pause()
+        else:
+            print "shuting down Server"
+            self.sslserver.stop()
+            self.sslserver.join()
 
     def get_mid_info(self):
         return json.dumps(self.mid_info)
@@ -174,34 +202,6 @@ class Connector():
         #print json.dumps(self.mid_info)
 
 
-    class TCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-
-        def __init__(self, server_address, RequestHandlerClass, connector):
-            SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
-            self.connector = connector
-
-    class TCPHandler(SocketServer.BaseRequestHandler):
-
-        def handle(self):
-            csocket = self.request
-            address = format(self.client_address[0])
-            connector = self.server.connector
-            print "connected to ",address
-
-            req = csocket.recv(1)
-
-            if req=="P":
-                authentication.pair(csocket)
-                    
-            elif req=="C":
-                #negotiate new secure connection port
-                newport = SECUREPORT                
-                csocket.sendall(str(newport))
-              
-            csocket.close()
-
-
-
     def compose_sms(self, number, ip, port):
         subprocess.Popen([PROGRAMDIR+"/sms.py", ip, port, number], stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -240,6 +240,7 @@ class sslserver(threading.Thread):
 
     def __init__(self, conn):
         threading.Thread.__init__(self)
+        self.running = True
         self.conn = conn
 
     def run(self):
@@ -255,30 +256,39 @@ class sslserver(threading.Thread):
             error = e[0]
             if (len(error)>0):  # ignore empty cafile error
                 print error
-        sslserversocket = SSL.Connection(ctx, socket.socket(socket.AF_INET,
+        self.sslserversocket = SSL.Connection(ctx, socket.socket(socket.AF_INET,
                              socket.SOCK_STREAM))                
-        # negotiate new secure connection port
-        newport = SECUREPORT   
-        sslserversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)     
-        sslserversocket.bind(('', newport)) 
-        sslserversocket.listen(5)
-        while True:
-                try:
-                    sslcsocket, ssladdress = sslserversocket.accept()
-                    address = format(ssladdress[0])
-                    print "SSL connected"                
-                    # receive data
-                    data = sslcsocket.recv(4096)
-                    self.conn.parseData(data, address, sslcsocket)
-                    # emit new data dbus Signal      
-                    self.conn.dbus_service_thread.emit_changed_signal()
-                except Exception as e:
-                    errnum = e[0]
+
+        self.sslserversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)     
+        self.sslserversocket.bind(('', SECUREPORT)) 
+        self.sslserversocket.listen(5)
+        while self.running:
+            sslcsocket = None
+            try:
+                sslcsocket, ssladdress = self.sslserversocket.accept()
+                address = format(ssladdress[0])
+                print "SSL connected"                
+                # receive data
+                data = sslcsocket.recv(4096)
+                self.conn.parseData(data, address, sslcsocket)
+                # emit new data dbus Signal      
+                self.conn.dbus_service_thread.emit_changed_signal()
+            except Exception as e:
+                errnum = e[0]
+                if (errnum != 22):
                     print "Error " + str(e[0])
-                finally:
-                    # close connection
+            finally:
+                # close connection
+                if sslcsocket:
                     sslcsocket.shutdown()
-                    sslcsocket.close() 
+                    sslcsocket.close()
+        
+        print "Server stopped"
+
+    def stop(self):
+        self.running = False
+        self.sslserversocket.sock_shutdown(0)
+        self.sslserversocket.close()
 
 
 def verify_cb(conn, cert, errnum, depth, ok):

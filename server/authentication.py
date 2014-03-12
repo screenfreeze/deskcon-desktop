@@ -35,6 +35,7 @@ def generate_keypair(uuid):
 def pair(clientsocket):
     print "wants to pair"       
     mycert = open(os.path.join(configmanager.keydir, "server.crt"), "r").read()
+    secure_port = str(configmanager.secure_port)
 
     myder_cert = ssl.PEM_cert_to_DER_cert(mycert)
     m = hashlib.sha256(myder_cert)
@@ -56,7 +57,7 @@ def pair(clientsocket):
     (vout, verr) = fpdiag.communicate()
 
     if (vout.strip()=="True"):
-        clientsocket.sendall("OK\n")
+        clientsocket.sendall(secure_port+"\n")
     else:
         clientsocket.sendall("0\n");
         pass

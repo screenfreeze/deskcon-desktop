@@ -56,16 +56,19 @@ else:
     gen_and_store_keys(uuid)
     config.read(configfile)
 
-
-port = config.get('network', 'port')
-secure_port = config.get('network', 'secure_port')
-bindip = config.get('network', 'bindip')
-uuid = config.getint('general', 'uuid')
-downloaddir = os.path.join(config.get('general', 'download_dir'))
-auto_accept_files = config.getboolean('permissions', 'auto_accept_files')
-auto_open_urls = config.getboolean('permissions', 'auto_open_urls')
-auto_store_clipboard = config.getboolean('permissions', 'auto_store_clipboard')
-
+def load():
+    global port, secure_port, bindip, uuid, downloaddir, auto_store_clipboard
+    global auto_open_urls, auto_accept_files
+    if os.path.isfile(configfile):
+        config.read(configfile)    
+    port = config.get('network', 'port')
+    secure_port = config.get('network', 'secure_port')
+    bindip = config.get('network', 'bindip')
+    uuid = config.getint('general', 'uuid')
+    downloaddir = os.path.join(config.get('general', 'download_dir'))
+    auto_accept_files = config.getboolean('permissions', 'auto_accept_files')
+    auto_open_urls = config.getboolean('permissions', 'auto_open_urls')
+    auto_store_clipboard = config.getboolean('permissions', 'auto_store_clipboard')
 
 def get_port():
     return port
@@ -97,3 +100,5 @@ def write_pidfile(pid):
     pfile = open(pidfile, 'w')
     pfile.write(pid)
     pfile.close()
+
+load()

@@ -44,6 +44,7 @@ def pair(q):
 def pair_client(clientsocket, q):
     print "wants to pair"       
     mycert = open(os.path.join(configmanager.keydir, "server.crt"), "r").read()
+    secure_port = str(configmanager.secure_port)
 
     myder_cert = ssl.PEM_cert_to_DER_cert(mycert)
     m = hashlib.sha256(myder_cert)
@@ -68,7 +69,7 @@ def pair_client(clientsocket, q):
         vout = raw_input("Do they match?(yes/no)\n") 
 
     if (vout.strip().lower()=="yes"):
-        clientsocket.sendall("OK\n")
+        clientsocket.sendall(secure_port+"\n")
     else:
         clientsocket.sendall("0\n");
         pass
@@ -83,12 +84,18 @@ def pair_client(clientsocket, q):
 
         if (q):
             q.put(1)
+
+        restart_server()
         print "Successfully paired the Device!"
 
     else:
         if (q):
             q.put(0)
         print "Failed to pair Device."
+
+def restart_server():
+    pid = int(open(configmanager.pidfile, "r").read())
+    os.kill(pid, 10)
 
 if __name__ == '__main__':
     pair(None)

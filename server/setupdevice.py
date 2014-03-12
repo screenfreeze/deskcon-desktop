@@ -25,6 +25,8 @@ class EntryWindow():
         self.hostlabel = builder.get_object("hostlabel")
         self.desktopfplabel = builder.get_object("desktopfplabel")
         self.devicefplabel = builder.get_object("devicefplabel")
+        self.succlabel = builder.get_object("succlabel")
+        self.faillabel = builder.get_object("faillabel")
 
         pairport = str(configmanager.port)
         openports = pairport + ", " + str(configmanager.secure_port)
@@ -41,34 +43,34 @@ class EntryWindow():
         self.window.show_all()
 
     def on_cancelbutton_clicked(self, widget):
-        if (self.stage == 2):
+        if (self.stage == 0):
+            Gtk.main_quit()
+        elif (self.stage == 2):
             self.pthread.response(0)
+            self.succlabel.hide()
             self.notebook.set_current_page(3)
             self.stage = 3
         else:
+            self.pthread.stop()            
             Gtk.main_quit()
 
     def on_forwardbutton_clicked(self, widget):
         if (self.stage == 0):
             self.pthread = pairingThread(self)
+            self.pthread.daemon = True
             self.pthread.start()
-            self.forwardbutton.set_sensitive(False)
             self.notebook.set_current_page(1)
             self.stage = 1
 
-        elif (self.stage == 2):
-            self.pthread.response(1)         
-            #self.notebook.set_current_page(3)
-            #self.stage = 3
-
-        elif (self.stage == 4):            
-            Gtk.main_quit()
+        elif (self.stage == 2):            
+            self.notebook.set_current_page(4)
+            self.pthread.response(1)
 
     def on_pairingwindow_destroy(self, *args):
+        if (self.pthread):
+            self.pthread.stop()
         Gtk.main_quit(*args)
 
-    def on_errordialog_close(self, widget):
-        Gtk.main_quit()
 
 class pairingThread (threading.Thread):
 
@@ -76,34 +78,39 @@ class pairingThread (threading.Thread):
         threading.Thread.__init__(self)
         self.window = window
         self.q = Queue()
-        self.pairprocess = Process(target=pair.pairserver, args=(self.q,))
+        self.pairprocess = Process(target=pair.pair, args=(self.q,))
+        self.pairprocess.daemon = True
 
     def run(self):
         self.pairprocess.start()
         fingerprints = self.q.get(True)
         self.window.desktopfplabel.set_text(fingerprints[0])
         self.window.devicefplabel.set_text(fingerprints[1])
-        self.window.forwardbutton.set_sensitive(True)
         self.window.notebook.set_current_page(2)
         self.window.stage = 2
 
     def response(self, r):
-        if (r == 1):
-            self.q.put("True", True)
+        thread.start_new_thread(self.sendresponse, (r,))
+
+    def sendresponse(self, r):
+        if (r == 1): #fingerprints match
+            self.q.put("yes", True)
             result = self.q.get(True)
+
             if (result == 1):
+                self.window.faillabel.hide()
                 self.window.notebook.set_current_page(3)
                 self.window.stage = 3
             else:
+                self.window.succlabel.hide()
                 self.window.notebook.set_current_page(3)
                 self.window.stage = 3
-            self.window.forwardbutton.set_text("Finish")
 
+        else: #fingerprints do not match
+            self.q.put("no", True)
 
-        else:
-            self.q.put("False", True)
-
-
+    def stop(self):
+        self.pairprocess.terminate()
 
 def main(args):
     GObject.threads_init()
@@ -112,5 +119,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
-  
-

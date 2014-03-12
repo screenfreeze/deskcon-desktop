@@ -79,7 +79,7 @@ class EntryWindow():
 
 def restart_server():
     pid = int(open(configmanager.pidfile, "r").read())
-    os.kill(pid, 0)
+    os.kill(pid, 10)
 
 
 def main(args):
