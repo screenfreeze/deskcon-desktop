@@ -61,6 +61,10 @@ class DbusThread(threading.Thread):
         def show_settings(self):
             self.connector.show_settings()
 
+        @dbus.service.method(dbusname)
+        def setup_device(self):
+            self.connector.setup_device()
+
         @dbus.service.signal(dbusname)
         def changed(self):
             pass

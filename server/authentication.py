@@ -56,7 +56,7 @@ def pair(clientsocket):
     (vout, verr) = fpdiag.communicate()
 
     if (vout.strip()=="True"):
-        clientsocket.sendall("OK\n")        
+        clientsocket.sendall("OK\n")
     else:
         clientsocket.sendall("0\n");
         pass

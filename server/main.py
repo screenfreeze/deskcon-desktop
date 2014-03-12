@@ -230,6 +230,10 @@ class Connector():
         subprocess.Popen([PROGRAMDIR+"/settingswindow.py"], stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    def setup_device(self):
+        subprocess.Popen([PROGRAMDIR+"/setupdevice.py"], stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 
 
 class sslserver(threading.Thread):
