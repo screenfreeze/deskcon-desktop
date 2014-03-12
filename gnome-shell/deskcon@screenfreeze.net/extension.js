@@ -28,6 +28,8 @@ const iface = <interface name="net.screenfreeze.desktopconnector">
 </method>
 <method name="show_settings">
 </method>
+<method name="setup_device">
+</method>
 <signal name="changed" />
 <signal name="new_notification" />
 </interface>
@@ -86,9 +88,10 @@ const DBusClient = new Lang.Class({
     showsettings: function() {
         this.proxy.call_sync('show_settings', null, 0, 1000, null);
     },
+    setupdevice: function() {
+        this.proxy.call_sync('setup_device', null, 0, 1000, null);
+    },
 });
-
-
 
 function updatehandler() {
     let jsonstr = "{}";
@@ -108,10 +111,13 @@ function updatehandler() {
         //test if phone is already in Menu
         if (regPhones[phone.uuid] == undefined) {
 
-            let deviceItem = new PhonesMenuItem(phone);
+            let deviceItem = new DeviceMenuItem(phone);
             regPhones[phone.uuid] = deviceItem;
-            _indicator.menu.addMenuItem(deviceItem);
-            _indicator.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            _indicator.menu.addMenuItem(deviceItem.infoitem, 0);
+            _indicator.menu.addMenuItem(deviceItem.notificationsmenuitem, 1);
+            _indicator.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem(), 2);
+
         }
         else {
             regPhones[phone.uuid].update(phone);
@@ -132,89 +138,35 @@ function notificationhandler() {
     }   
 }
 
-const PhonesMenuItem = new Lang.Class({
-    Name: 'PhonesMenuItem',
-    Extends: PopupMenu.PopupBaseMenuItem,  
+const DeviceMenuItem = new Lang.Class({
+    Name: 'DeviceMenuItem',
 
     _init: function(info) {
-        this.parent({reactive: false});
-        this._info = info;
-
-        let missedmsgsstr = "";
-        let missedcallsstr = "";
+        this.infoitem = new PopupMenu.PopupSubMenuMenuItem(info.name);
+        let pingb = new PopupMenu.PopupMenuItem("Ping");
+        let sendfileb = new PopupMenu.PopupMenuItem("Send File(s)");
+        let composeb = new PopupMenu.PopupMenuItem("Compose Message");
+        composeb.connect('activate', Lang.bind(this, this.composemsg));
+        pingb.connect('activate', Lang.bind(this, this.ping));
+        sendfileb.connect('activate', Lang.bind(this, this.sendfile));
 
         this._ip = info.ip;
         this._port = info.controlport;
         let can_message = info.canmessage;
 
-        //missedstrs
-        if (info.missedsmscount > 0) { missedmsgsstr = "unread Messages "+ info.missedsmscount; }
-        if (info.missedcallcount > 0) { missedcallsstr = "missed Calls "+ info.missedcallcount; }
-
-        //Batterystring
-        let batterystr = "Battery:  "+info.battery+"%";        
-        if (info.batterystate) {
-            batterystr += " (*)";
-        }
-
-        //Volumestring
-        let volumestr = "Volume:  "+info.volume+"%     ";
-
-        //used Storagestring
-        let storagestr = "Storage:  "+info.storage+"%     ";
-
-        this.vbox = new St.BoxLayout({vertical: true });
-        this.stathbox = new St.BoxLayout({vertical: false});
-        this.missedhbox = new St.BoxLayout({vertical: false});
-        this.namelabel = new St.Label({ text: info.name, style_class: 'device-label' });
-        this.vollabel = new St.Label({ text: volumestr });
-        this.batlabel = new St.Label({ text: batterystr });
-        this.storagelabel = new St.Label({ text: storagestr });
-
-        this.missedcallslabel = new St.Label({ text: missedcallsstr });
-        this.missedmsgslabel = new St.Label({ text: missedmsgsstr });
-        this.notificationslabel = new St.Label({ text: "Notifications", style_class: 'notifications-label' });
-        this.notificationsvbox = new St.BoxLayout({vertical: true, style_class: 'notifications-box'});
-        
-        this.missedhbox.add(this.missedmsgslabel);
-        this.missedhbox.add(this.missedcallslabel);
-        this.stathbox.add(this.vollabel);
-        this.stathbox.add(this.batlabel);
-
-        this.compbutton = new St.Button({style_class: 'notification-icon-button',label: "Compose Message..."}); 
-        this.compbutton.connect('clicked', Lang.bind(this, this.composemsg));
-        this.pingbutton = new St.Button({style_class: 'notification-icon-button',label: "Ping"}); 
-        this.pingbutton.connect('clicked', Lang.bind(this, this.ping));
-        this.sendfilebutton = new St.Button({style_class: 'notification-icon-button',label: "Send File(s)"}); 
-        this.sendfilebutton.connect('clicked', Lang.bind(this, this.sendfile));
-        this.vbox.add(this.namelabel);
-        this.vbox.add(this.stathbox);        
-        this.vbox.add(this.storagelabel);  
-        this.vbox.add(this.missedhbox);
-        this.vbox.add(this.notificationslabel);
-        this.vbox.add(this.notificationsvbox, { x_fill: true, expand: false });
-        
         if (can_message) {
-            this.vbox.add(this.compbutton, { x_fill: true, expand: true });
-        }
-        this.vbox.add(this.pingbutton, { x_fill: true, expand: true });
-        this.vbox.add(this.sendfilebutton, { x_fill: true, expand: true });
-
-        // GS 3.8 support
-        if (shellversion[1] == 10) {
-            this.actor.add_child(this.vbox, { expand: true });
-        }
-        else {
-            this.addActor(this.vbox, { expand: true });
+            this.infoitem.menu.addMenuItem(composeb);
         }        
-    },
+        this.infoitem.menu.addMenuItem(sendfileb);        
+        this.infoitem.menu.addMenuItem(pingb);
 
-    destroy: function() {
-        this.parent();
-    },
-
-    activate: function(event) {
-        this.parent(event);
+        this.notificationsmenuitem = new PopupMenu.PopupSubMenuMenuItem("Notifications");
+        let clearb = new PopupMenu.PopupMenuItem("Clear");
+        clearb.connect('activate', Lang.bind(this, this.clearnotifications));
+        this.notifcationsArray = new Array();
+        this.notificationsmenuitem.menu.addMenuItem(clearb);
+        this.notificationsmenuitem.actor.hide()
+        this.update(info)
     },
 
     composemsg: function(event) {
@@ -233,25 +185,35 @@ const PhonesMenuItem = new Lang.Class({
     },
 
     addnotification: function(text) {
-        let n = new St.Button({style_class: 'panel-button', label: text, 
-                style: 'border: 1px solid grey; font-size: 1em; font-weight: normal; padding-left:0.2em;' });
-        n.set_alignment(St.Align.START, St.Align.START);
-        n.connect('clicked', Lang.bind(this, function() { n.destroy(); }));
-        this.notificationsvbox.add(n, { x_fill: true, expand: false });
+        let newnot = new PopupMenu.PopupMenuItem(text, {reactive: false});
+        this.notifcationsArray.push(newnot);
+        newnot.connect('clicked', Lang.bind(this, function() { newnot.destroy(); }));
+        this.notificationsmenuitem.menu.addMenuItem(newnot);
+        this.notificationsmenuitem.actor.show();
+    },
+
+    clearnotifications: function() {
+        for (i=0;i<this.notifcationsArray.length;i++) {
+            let not = this.notifcationsArray.pop();
+            not.destroy();
+        }
+        this.notificationsmenuitem.actor.hide();
     },
 
     update: function(info) {
+        let name = info.name
+
         //Batterystring
-        let batterystr = "Battery:  "+info.battery+"%";        
+        let batterystr = "Bat:  "+info.battery+"%";        
         if (info.batterystate) {
             batterystr += " (*)";
         }
 
         //Volumestring
-        let volumestr = "Volume:  "+info.volume+"%    ";
+        let volumestr = "Vol:  "+info.volume+"%";
         
         //used Storagestring
-        let storagestr = "Storage:  "+info.storage+"%     ";
+        let storagestr = "Str:  "+info.storage+"%";
 
         //missedstrs
         let missedmsgsstr = "";
@@ -259,13 +221,17 @@ const PhonesMenuItem = new Lang.Class({
         if (info.missedsmscount > 0) { missedmsgsstr = "unread Messages "+ info.missedsmscount; }
         if (info.missedcallcount > 0) { missedcallsstr = "missed Calls "+ info.missedcallcount; }
 
-        this.batlabel.set_text(batterystr);
-        this.vollabel.set_text(volumestr);
-        this.storagelabel.set_text(storagestr);
-        this.missedcallslabel.set_text(missedcallsstr);
-        this.missedmsgslabel.set_text(missedmsgsstr);
-    },
+        let newtxt = (name+"\n"+batterystr+" / "+volumestr+" / "+storagestr);
 
+        if (missedmsgsstr != "") {
+            newtxt = newtxt+"\n"+missedmsgsstr
+        }
+        if (missedcallsstr != "") {
+            newtxt = newtxt+"\n"+missedcallsstr
+        }
+
+        this.infoitem.label.set_text(newtxt);
+    },
 });
 
 const PhonesMenu = new Lang.Class({
@@ -282,8 +248,14 @@ const PhonesMenu = new Lang.Class({
         this.actor.add_child(hbox);
 
         let settingsbutton = new PopupMenu.PopupMenuItem("Settings");
+        let setupdevicebutton = new PopupMenu.PopupMenuItem("Setup new Device");
+
         settingsbutton.connect('activate', Lang.bind(this, this.show_settings));
+        setupdevicebutton.connect('activate', Lang.bind(this, this.setup_device));
+        this.menu.addMenuItem(setupdevicebutton);
         this.menu.addMenuItem(settingsbutton);
+
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     },
 
     show: function() {
@@ -297,6 +269,10 @@ const PhonesMenu = new Lang.Class({
 
     show_settings: function() {
         dbusclient.showsettings();
+    },
+
+    setup_device: function() {
+        dbusclient.setupdevice();
     },
 
 });
@@ -354,3 +330,4 @@ function disable() {
     _indicator.destroy();
     regPhones = {};
 }
+
