@@ -9,7 +9,6 @@ from dbus import glib
 from dbus.mainloop.glib import DBusGMainLoop
 glib.init_threads()
 
-
 class IndicatorDeskCon:
     def __init__(self):
         workingdir = os.getcwd()
@@ -32,6 +31,11 @@ class IndicatorDeskCon:
         self.settingsitem.connect("activate", self.showsettings)
         self.settingsitem.show()
         self.menu.append(self.settingsitem)
+        #Setup Button
+        self.setupdeviceitem = Gtk.MenuItem("Setup Device")
+        self.setupdeviceitem.connect("activate", self.setupdevice)
+        self.setupdeviceitem.show()
+        self.menu.append(self.setupdeviceitem)
     
     def update(self):
         try:
@@ -79,6 +83,9 @@ class IndicatorDeskCon:
     def showsettings(self, evt):
         self.dbusclient.show_settings()
 
+    def setupdevice(self, evt):
+        self.dbusclient.setup_device()
+
     def main(self):
         self.dbusclient.run()
         self.update()
@@ -86,35 +93,52 @@ class IndicatorDeskCon:
 
 class DeviceMenuBundle():
     def __init__(self, indicator, data):
-        self.indicator = indicator
-        # is first check
-        menucnt = len(self.indicator.menu.get_children())
-        if (menucnt > 0):
-            separator = Gtk.SeparatorMenuItem()
-            separator.show()
-            self.indicator.menu.append(separator)
+        self.indicator = indicator 
 
         self.statsitem = Gtk.MenuItem()
         self.statsitem.show()
-        self.indicator.menu.append(self.statsitem)
+        self.actionmenu = Gtk.Menu()
+        self.statsitem.set_submenu(self.actionmenu)
+        self.indicator.menu.insert(self.statsitem, 0)        
+
+        #Actions
         if (data['canmessage']):
-            self.composeitem = Gtk.MenuItem("     Compose Message ...")
+            self.composeitem = Gtk.MenuItem("Compose Message ...")
             self.composeitem.connect("activate", self.indicator.compose, 
                             data['ip'], data['controlport'])
             self.composeitem.show()
-            self.indicator.menu.append(self.composeitem)
+            self.actionmenu.append(self.composeitem)
 
-        self.pingitem = Gtk.MenuItem("     Ping")
+        self.pingitem = Gtk.MenuItem("Ping")
         self.pingitem.connect("activate", self.indicator.ping, 
                         data['ip'], data['controlport'])
         self.pingitem.show()
-        self.indicator.menu.append(self.pingitem)
+        self.actionmenu.append(self.pingitem)
 
-        self.sendfileitem = Gtk.MenuItem("     Send File(s)")
+        self.sendfileitem = Gtk.MenuItem("Send File(s)")
         self.sendfileitem.connect("activate", self.indicator.sendfile, 
                         data['ip'], data['controlport'])
         self.sendfileitem.show()
-        self.indicator.menu.append(self.sendfileitem)
+        self.actionmenu.append(self.sendfileitem)
+        
+        #Notifications
+        self.notificationlist = []
+        self.notificationitem = Gtk.MenuItem("Notifications")
+        self.notificationsmenu = Gtk.Menu()
+        self.notificationitem.set_submenu(self.notificationsmenu)
+        self.notclearitem = Gtk.MenuItem("clear")
+        self.notclearitem.connect("activate", self.clearnotifications)
+        self.notclearitem.show()
+        separator = Gtk.SeparatorMenuItem()
+        separator.show()
+        self.notificationsmenu.append(separator)
+        self.notificationsmenu.append(self.notclearitem)
+
+        separator = Gtk.SeparatorMenuItem()
+        separator.show()
+        self.indicator.menu.insert(self.notificationitem, 1)
+        #Sep
+        self.indicator.menu.insert(separator, 2)
 
         self.update(data)
 
@@ -132,21 +156,23 @@ class DeviceMenuBundle():
         missedtxt = missedsmstxt+missedcalltxt
         
         text = (name+
-                "\n     Volume: "+volume+"%   Battery: "+battery+"%"+
-                "\n     Storage: "+storage+"%"+
-                missedtxt+ "\nNotifications:")
+                "\nBat: "+battery+"% / Vol: "+volume+"% / Str: "+storage+"%"+
+                missedtxt)
 
         self.statsitem.set_label(text)
 
     def addnotification(self, text):
         notificationitem = Gtk.MenuItem(text)
         notificationitem.show()
-        notificationitem.connect("activate", self.removenotification, notificationitem)
-        pos = self.getmenuposition() + 1
-        self.indicator.menu.insert(notificationitem, pos)
+        self.notificationlist.append(notificationitem)
+        self.notificationsmenu.insert(notificationitem, 0)
+        self.notificationitem.show()
 
-    def removenotification(self, widget, notification):
-        notification.destroy()
+    def clearnotifications(self, widget):
+        for item in self.notificationlist:
+            self.notificationlist.remove(item)
+            item.destroy()
+        self.notificationitem.hide()
 
     # get pos child poc in menu
     def getmenuposition(self):
@@ -201,6 +227,9 @@ class DbusClient():
 
     def show_settings(self):
         self.iface.show_settings()
+
+    def setup_device(self):
+        self.iface.setup_device()
 
 
 if __name__ == "__main__":
