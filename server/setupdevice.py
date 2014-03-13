@@ -31,7 +31,7 @@ class EntryWindow():
         pairport = str(configmanager.port)
         openports = pairport + ", " + str(configmanager.secure_port)
         lanip = socket.gethostname()
-        hosttxt = "Host: "+lanip+"\nPort: "+pairport
+        hosttxt = "Host: "+lanip+" or IP"+"\nPort: "+pairport
 
         self.stage = 0
 

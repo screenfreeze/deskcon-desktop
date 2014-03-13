@@ -1,6 +1,6 @@
 DeskCon
 -------
-Version 0.2.5
+Version 0.2.7
 
 integrates your Android Device in the Desktop. Receive Notifications, Files
 and Commands from your mobile Device on your Desktop PC. The Data is send over a
@@ -31,12 +31,14 @@ Install:
     - start deskcon.sh in Root Folder of the Project
     - (optional) copy the Gnome Shell (>=3.8) Extension to ~/.local/share/gnome-shell/extensions
       and activate it 
+    - (optional) start unity/deskcon-indicator for a Unity Indicator
     
 
 Usage:
 ------
     - start the DeskCon Desktop Server
     - (optional) change config File in ~/.deskcon
+    - To pair with a new Device, start setup_device.sh or use the Gnome Extension or Unity Indicator
     - start DeskCon App on your Android Device
     - select Network > Desktop Hosts
     - click the + Button and enter the IP of your Desktop PC
