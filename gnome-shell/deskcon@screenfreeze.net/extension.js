@@ -188,7 +188,7 @@ const DeviceMenuItem = new Lang.Class({
         let newnot = new PopupMenu.PopupMenuItem(text, {reactive: false});
         this.notifcationsArray.push(newnot);
         newnot.connect('clicked', Lang.bind(this, function() { newnot.destroy(); }));
-        this.notificationsmenuitem.menu.addMenuItem(newnot);
+        this.notificationsmenuitem.menu.addMenuItem(newnot, 0);
         this.notificationsmenuitem.actor.show();
     },
 
