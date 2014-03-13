@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # DesCon Desktop Server
 # Version 0.2
 
@@ -23,9 +24,11 @@ from OpenSSL import SSL, crypto
 from dbusservice import DbusThread
 
 configmanager.write_pidfile(str(os.getpid()))
+abspath = os.path.abspath(__file__)
+
 HOST = configmanager.get_bindip()
 SECUREPORT = int(configmanager.secure_port)
-PROGRAMDIR = os.getcwd()
+PROGRAMDIR = os.path.dirname(abspath)
 BUFFERSIZE = 4096
 
 AUTO_ACCEPT_FILES = configmanager.auto_accept_files
@@ -300,6 +303,7 @@ def verify_cb(conn, cert, errnum, depth, ok):
 
 
 def main():
+    os.chdir(PROGRAMDIR)
     app = Connector()
     app.run()
 
