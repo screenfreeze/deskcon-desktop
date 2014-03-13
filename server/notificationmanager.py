@@ -52,8 +52,14 @@ class FileNotification(threading.Thread):
         self.file_notification = Notify.Notification.new ("File upload", 
                                                         "incoming File"+filestxt+
                                                         "\nfrom "+name,"phone")
-        self.file_notification.add_action("acc_file","accept", self.accept,None, None)
-        self.file_notification.add_action("cancel_file","cancel", self.cancel,None, None)    
+        # Fedora workaround
+        try:
+            self.file_notification.add_action("acc_file","accept", self.accept,None, None)
+            self.file_notification.add_action("cancel_file","cancel", self.cancel,None, None) 
+        except TypeError:
+            self.file_notification.add_action("acc_file","accept", self.accept,None)
+            self.file_notification.add_action("cancel_file","cancel", self.cancel,None) 
+           
 
     def run(self):
         GObject.threads_init()
@@ -102,8 +108,17 @@ class FileReceivedNotification(threading.Thread):
 
         self.nnotification = Notify.Notification.new ("File received", filestxt, "phone")
         if (len(self.filenames) == 1):
-            self.nnotification.add_action("open_path","open", self.open_file, filenames[0], None)
-        self.nnotification.add_action("open_folder","open Folder", self.open_folder, "" , None)
+            # Fedora workaround
+            try:
+                self.nnotification.add_action("open_path","open", self.open_file, filenames[0], None)
+            except TypeError:
+                self.nnotification.add_action("open_path","open", self.open_file, filenames[0])
+            
+         # Fedora workaround
+        try:
+            self.nnotification.add_action("open_folder","open Folder", self.open_folder, "" , None)
+        except TypeError:
+            self.nnotification.add_action("open_folder","open Folder", self.open_folder, "" )
 
     def run(self):
         GObject.threads_init()
@@ -129,7 +144,12 @@ class SMSReceivedNotification(threading.Thread):
         if name == "":
             name = number
         self.sms_notification = Notify.Notification.new ("SMS from "+name, message, icon_name)
-        self.sms_notification.add_action("reply", "reply", self.reply_sms, None, None)
+        # Fedora workaround
+        try:
+            self.sms_notification.add_action("reply", "reply", self.reply_sms, None, None)
+        except TypeError:
+            self.sms_notification.add_action("reply", "reply", self.reply_sms, None)
+        
 
     def run(self):
         GObject.threads_init()
