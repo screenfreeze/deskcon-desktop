@@ -1,0 +1,29 @@
+Release 0.2.7
+    added Signal Handling
+    added Settings Window
+    added Pairing Window
+    changed Connection making, pairing
+    fixed Fedora Notifications
+    removed MAC Label
+
+Release 0.2.5
+    added Connection Timeout and Wakelock
+    fixed large Filetransfer
+    fixed Picasa Images*
+    added Ping Notification
+    added File upload to Device
+    
+Release 0.2.1
+    added Mediaplayer Widget
+    fixed Powerstate Listener
+    fixed Startup Issues
+
+Release 0.2
+    added multi Filetransfer
+    added License
+    Priority 999 StatusUpdateService
+    added Ping,fixed Wifilock
+    small improvments
+
+Release 0.1
+    first commit
