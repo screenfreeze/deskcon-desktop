@@ -10,29 +10,31 @@ const PopupMenu = imports.ui.popupMenu;
 const Panel = imports.ui.panel;
 const Tweener = imports.ui.tweener;
 
-const iface = <interface name="net.screenfreeze.desktopconnector">
-<method name="stats">
-<arg type="s" direction="out" name="json" />
-</method>
-<method name="notification">
-<arg type="s" direction="out" name="text" />
-</method>
-<method name="compose_sms">
-<arg type="s" direction="in" name="host" />
-</method>
-<method name="ping_device">
-<arg type="s" direction="in" name="host" />
-</method>
-<method name="send_file">
-<arg type="s" direction="in" name="host" />
-</method>
-<method name="show_settings">
-</method>
-<method name="setup_device">
-</method>
-<signal name="changed" />
-<signal name="new_notification" />
-</interface>
+const iface = '<node> \
+    <interface name="net.screenfreeze.desktopconnector"> \
+        <method name="stats"> \
+            <arg type="s" direction="out" name="json" /> \
+        </method> \
+        <method name="notification"> \
+            <arg type="s" direction="out" name="text" /> \
+        </method> \
+        <method name="compose_sms"> \
+            <arg type="s" direction="in" name="host" /> \
+        </method> \
+        <method name="ping_device"> \
+            <arg type="s" direction="in" name="host" /> \
+        </method> \
+        <method name="send_file"> \
+            <arg type="s" direction="in" name="host" /> \
+        </method> \
+        <method name="show_settings"> \
+        </method> \
+        <method name="setup_device"> \
+        </method> \
+        <signal name="changed" /> \
+        <signal name="new_notification" /> \
+    </interface> \
+</node>';
 
 
 const DBusClient = new Lang.Class({
