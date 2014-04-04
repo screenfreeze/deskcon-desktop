@@ -315,7 +315,7 @@ function enable() {
     shellversion = imports.misc.config.PACKAGE_VERSION.split(".").map(function (x) { return +x; })
     
     // GS 3.8 support
-    if (shellversion[1] == 10) {
+    if (shellversion[1] >= 10) {
         _indicator = new PhonesMenu; 
     }
     else {
