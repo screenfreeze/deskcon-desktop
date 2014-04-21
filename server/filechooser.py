@@ -10,6 +10,7 @@ from gi.repository import Gtk, GObject
 class FileChooserWindow(Gtk.Window):
 
     def __init__(self):
+        Gtk.Window.__init__(self)
         self.dialog = Gtk.FileChooserDialog("Please choose a file", self,
             Gtk.FileChooserAction.OPEN,
             (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
