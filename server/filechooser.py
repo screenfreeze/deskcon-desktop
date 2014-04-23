@@ -16,7 +16,9 @@ class FileChooserWindow(Gtk.Window):
             (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
              Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
+        homefolder = os.path.expanduser("~")
         self.dialog.set_select_multiple(True)
+        self.dialog.set_current_folder(homefolder)
 
     def run(self, ip, port):
         response = self.dialog.run()
@@ -50,7 +52,6 @@ def send_data(dialog, files, ip, port):
     ctx.use_certificate_file(configmanager.certificatepath)
     ctx.load_verify_locations(configmanager.cafilepath)                
     sslclientsocket = SSL.Connection(ctx, socket.socket(socket.AF_INET, socket.SOCK_STREAM))
-
 
     succ = False
     try:
