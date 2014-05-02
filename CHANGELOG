@@ -1,3 +1,9 @@
+Release 0.2.8
+    changed Filechooser Path
+    fixed Windows in GS3.12
+    new Cipher List
+    GS 3.12 support
+
 Release 0.2.7
     added Signal Handling
     added Settings Window

@@ -1,6 +1,6 @@
 DeskCon
 -------
-Version 0.2.7
+Version 0.2.8
 
 integrates your Android Device in the Desktop. Receive Notifications, Files
 and Commands from your mobile Device on your Desktop PC. The Data is send over a
