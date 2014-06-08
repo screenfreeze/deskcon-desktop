@@ -48,6 +48,7 @@ Usage:
 Todo:
 -----
 	- Translations
+	- Devices communicate via UDP Broadcasts
 	- Mac/Windows support
 	- Fingerprint validation via QR Code
 	- Browser Extensions
@@ -56,4 +57,3 @@ Todo:
 Bugs:
 -----
 	- UI Design
-	- Notifications stop at some point
