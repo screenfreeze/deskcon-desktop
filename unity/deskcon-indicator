@@ -95,7 +95,7 @@ class DeviceMenuBundle():
     def __init__(self, indicator, data):
         self.indicator = indicator 
 
-        self.statsitem = Gtk.MenuItem()
+        self.statsitem = Gtk.MenuItem("")
         self.statsitem.show()
         self.actionmenu = Gtk.Menu()
         self.statsitem.set_submenu(self.actionmenu)
