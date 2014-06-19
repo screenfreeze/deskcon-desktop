@@ -99,7 +99,8 @@ class DeviceMenuBundle():
         self.statsitem.show()
         self.actionmenu = Gtk.Menu()
         self.statsitem.set_submenu(self.actionmenu)
-        self.indicator.menu.insert(self.statsitem, 0)        
+        self.indicator.menu.insert(self.statsitem, 0)  
+        self.composeitem = None
 
         #Actions
         if (data['canmessage']):
@@ -160,6 +161,12 @@ class DeviceMenuBundle():
                 missedtxt)
 
         self.statsitem.set_label(text)
+        if (data['canmessage'] and self.composeitem == None):
+            self.composeitem = Gtk.MenuItem("Compose Message ...")
+            self.composeitem.connect("activate", self.indicator.compose, 
+                            data['ip'], data['controlport'])
+            self.composeitem.show()
+            self.actionmenu.append(self.composeitem)
 
     def addnotification(self, text):
         notificationitem = Gtk.MenuItem(text)
@@ -193,7 +200,7 @@ class DbusClient():
                                    True, True)
             self.iface = dbus.Interface(proxy, 'net.screenfreeze.desktopconnector')
         except Exception:
-            print "dbus error"  
+            print "dbus error"
        
         bus.add_signal_receiver(self.indicator.update,
                         dbus_interface="net.screenfreeze.desktopconnector",

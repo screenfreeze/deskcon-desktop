@@ -157,7 +157,8 @@ const DeviceMenuItem = new Lang.Class({
         let can_message = info.canmessage;
 
         if (can_message) {
-            this.infoitem.menu.addMenuItem(composeb);
+            this.composeb = composeb;
+            this.infoitem.menu.addMenuItem(this.composeb);
         }        
         this.infoitem.menu.addMenuItem(sendfileb);        
         this.infoitem.menu.addMenuItem(pingb);
@@ -233,6 +234,14 @@ const DeviceMenuItem = new Lang.Class({
         }
 
         this.infoitem.label.set_text(newtxt);
+
+        let can_message = info.canmessage;
+
+        if (can_message && typeof this.composeb === 'undefined') {
+            this.composeb = new PopupMenu.PopupMenuItem("Compose Message");
+            this.composeb.connect('activate', Lang.bind(this, this.composemsg));
+            this.infoitem.menu.addMenuItem(this.composeb);
+        }  
     },
 });
 
