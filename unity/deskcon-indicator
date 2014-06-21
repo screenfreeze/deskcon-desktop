@@ -14,7 +14,7 @@ class IndicatorDeskCon:
         workingdir = os.getcwd()
 
         self.ind = appindicator.Indicator.new("indicator-deskcon", 
-                            workingdir+"/indicator-deskcon.svg",
+                            "indicator-deskcon",
                             appindicator.IndicatorCategory.APPLICATION_STATUS)
 
         self.ind.set_status (appindicator.IndicatorStatus.ACTIVE)
