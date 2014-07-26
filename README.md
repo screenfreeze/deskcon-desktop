@@ -1,6 +1,6 @@
 DeskCon
 -------
-Version 0.2.8
+Version 0.3
 
 integrates your Android Device in the Desktop. Receive Notifications, Files
 and Commands from your mobile Device on your Desktop PC. The Data is send over a
@@ -48,7 +48,6 @@ Usage:
 Todo:
 -----
 	- Translations
-	- Devices communicate via UDP Broadcasts
 	- Mac/Windows support
 	- Fingerprint validation via QR Code
 	- Browser Extensions

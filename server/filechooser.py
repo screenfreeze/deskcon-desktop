@@ -3,9 +3,13 @@ import os
 import sys
 import socket
 import configmanager
+import threading
 import json
 from OpenSSL import SSL, crypto
 from gi.repository import Gtk, GObject
+
+sent_size = 0
+total_size = 0
 
 class FileChooserWindow(Gtk.Window):
 
@@ -24,11 +28,34 @@ class FileChooserWindow(Gtk.Window):
         response = self.dialog.run()
         if response == Gtk.ResponseType.OK:
             files = self.dialog.get_filenames()
-            send_data(self.dialog, files, ip, port)
+            pd = ProgressbarDialog(self.dialog)
+            t = threading.Thread(target=pd.run, args = ())
+            t.daemon = True
+            t.start()
+
+            send_data(self.dialog, files, ip, port, pd)
         elif response == Gtk.ResponseType.CANCEL:
             self.dialog.destroy()
 
-def send_data(dialog, files, ip, port):
+
+class ProgressbarDialog(Gtk.Dialog):
+
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self, "Filetransfer", parent, 0)            
+
+        self.set_default_size(150, 50)
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_transient_for(parent)
+
+        label = Gtk.Label("Transfering Files ...")
+        self.progressbar = Gtk.ProgressBar()
+
+        box = self.get_content_area()
+        box.add(label)
+        box.add(self.progressbar)
+        self.show_all()
+
+def send_data(dialog, files, ip, port, pd):
     HOST, PORT = ip, int(port)
     uuid = configmanager.uuid
     hostname = socket.gethostname()
@@ -37,7 +64,6 @@ def send_data(dialog, files, ip, port):
     for filepath in files:
         head, name = os.path.split(filepath)
         filenames.append(name)
-
 
     jsonobj = {'uuid': uuid, 'name': hostname, 
                'type': "fileup", 'data': json.dumps(filenames)}
@@ -60,9 +86,14 @@ def send_data(dialog, files, ip, port):
         print "wait for ack"
         response = sslclientsocket.recv(2) #wait for Ack
         if (response == "OK"):
+            # Get total transfer size
+            global total_size
+            for filepath in files: #send files
+                total_size = total_size + os.path.getsize(filepath)
+
             print "send files"
             for filepath in files: #send files
-                send_file(filepath, sslclientsocket)
+                send_file(filepath, sslclientsocket, pd)
             print "succesfully send Files"
 
         succ = True
@@ -76,7 +107,7 @@ def send_data(dialog, files, ip, port):
             sslclientsocket.close()
             dialog.destroy()
 
-def send_file(filepath, socket):
+def send_file(filepath, socket, pd):
     filesize = os.path.getsize(filepath)
 
     socket.send(str(filesize)+"\n")
@@ -84,10 +115,19 @@ def send_file(filepath, socket):
 
     ofile = open(filepath, 'rb')
     fbuffer = ofile.read(4096)
+    sent_size = 0
     while (fbuffer):
         socket.send(fbuffer)
         fbuffer = ofile.read(4096)
+        update_progress(pd)
+
     ofile.close()
+
+def update_progress(pd):
+    global sent_size
+    sent_size = sent_size+4096
+    perc = (sent_size/float(total_size))
+    pd.progressbar.set_fraction(perc)
 
 def verify_cb(conn, cert, errnum, depth, ok):
     # This obviously has to be updated

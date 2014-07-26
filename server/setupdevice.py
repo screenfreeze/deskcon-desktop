@@ -59,6 +59,9 @@ class EntryWindow():
             self.pthread = pairingThread(self)
             self.pthread.daemon = True
             self.pthread.start()
+            self.dthread = discoveryThread()
+            self.dthread.daemon = True
+            self.dthread.start()
             self.notebook.set_current_page(1)
             self.stage = 1
 
@@ -67,9 +70,38 @@ class EntryWindow():
             self.pthread.response(1)
 
     def on_pairingwindow_destroy(self, *args):
-        if (self.pthread):
+        if ("self.pthread" in locals()):
             self.pthread.stop()
         Gtk.main_quit(*args)
+
+
+class discoveryThread (threading.Thread):
+
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        UDP_IP = "0.0.0.0"
+        UDP_PORT = 5108
+
+        sock = socket.socket(socket.AF_INET, # Internet
+                             socket.SOCK_DGRAM) # UDP
+        sock.bind((UDP_IP, UDP_PORT))
+
+        while (True):
+            data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+
+            spl = data.split("::")
+            if (spl[0] == "0"):
+                print "received discovery broadcast"
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.bind(('', 0))
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                uuid = str(configmanager.uuid)
+                pairport = str(configmanager.port)
+                hostname = socket.gethostname()
+                data = uuid+"::"+hostname+"::"+pairport
+                s.sendto(data, (addr[0], UDP_PORT))
 
 
 class pairingThread (threading.Thread):
